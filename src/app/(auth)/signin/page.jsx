@@ -13,11 +13,16 @@ export default function SignIn() {
       body: JSON.stringify(form)
     });
     if (res.ok) {
-    // Esto fuerza a Next.js a refrescar las cookies antes de saltar
-    window.location.href = '/dashboard'; 
-  } else {
-    alert("Error al entrar");
-  }
+  // Primero pedimos el perfil para ver si es super
+      const userRes = await fetch('/api/user');
+      const userData = await userRes.json();
+      
+      if (userData.super) {
+        window.location.href = '/admin';
+      } else {
+        window.location.href = '/dashboard';
+      }
+    }
   };
 
   return (

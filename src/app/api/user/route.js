@@ -12,11 +12,11 @@ export async function GET() {
   }
 
   const res = await query(
-    `SELECT u.name, u.email 
-     FROM users u 
-     JOIN sessions s ON u.id = s.user_id 
-     WHERE s.session_token = $1`,
-    [token]
+    `SELECT u.id, u.name, u.email, u.super 
+   FROM users u 
+   JOIN sessions s ON u.id = s.user_id 
+   WHERE s.session_token = $1`,
+  [token]
   );
 
   if (res.rows.length === 0) {
