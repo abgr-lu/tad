@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 
 export default function AdminShortsPage() {
   const [data, setData] = useState([]);
+  const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({
     company: "",
     symbol: "",
@@ -12,7 +13,7 @@ export default function AdminShortsPage() {
     outstanding: 0,
     float: 0,
     av_vol: 0,
-    date: new Date().toISOString().split("T")[0], // Fecha de hoy por defecto
+    date: new Date().toISOString().split("T")[0],
   });
 
   const fetchShorts = () => {
@@ -25,50 +26,72 @@ export default function AdminShortsPage() {
     fetchShorts();
   }, []);
 
+  const startEdit = (item) => {
+    setEditingId(item.id);
+    // Formateamos la fecha para que el input type="date" la reconozca (YYYY-MM-DD)
+    const formattedDate = new Date(item.date).toISOString().split("T")[0];
+    setFormData({ ...item, date: formattedDate });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setFormData({
+      company: "", symbol: "", market: "", current_short: 0,
+      previous_short: 0, outstanding: 0, float: 0, av_vol: 0,
+      date: new Date().toISOString().split("T")[0],
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await fetch("/api/admin/insert", {
-      method: "POST",
-      body: JSON.stringify({ table: "shorts", data: formData }),
+    const method = editingId ? "PUT" : "POST";
+    const endpoint = editingId ? "/api/admin/update" : "/api/admin/insert";
+    const payload = editingId 
+      ? { table: "shorts", id: editingId, data: formData } 
+      : { table: "shorts", data: formData };
+
+    const res = await fetch(endpoint, {
+      method: method,
+      body: JSON.stringify(payload),
     });
-    fetchShorts();
+
+    if (res.ok) {
+      alert(editingId ? "Actualizado correctamente" : "Guardado correctamente");
+      cancelEdit();
+      fetchShorts();
+    } else {
+      alert("Error al procesar la solicitud");
+    }
   };
 
   const handleDelete = async (id) => {
     if (confirm("¿Estás seguro de que quieres eliminar este registro?")) {
       const res = await fetch("/api/admin/delete", {
         method: "DELETE",
-        body: JSON.stringify({ table: "shorts", id }), // Cambia 'companies' por la tabla que toque
+        body: JSON.stringify({ table: "shorts", id }),
       });
-
-      if (res.ok) {
-        // 1. Limpia el objeto en memoria (importante para que el siguiente no herede datos)
-        setFormData({});
-        // 2. Limpia los inputs visualmente (quita el texto de las cajas)
-        e.target.reset();
-        // 3. Refresca la lista de abajo
-        fetchShorts(); // O la función que uses para recargar la lista
-      } else {
-        alert("Error al eliminar");
-      }
+      if (res.ok) fetchShorts();
+      else alert("Error al eliminar");
     }
   };
 
   return (
     <div>
-      <h1>Gestión de Short Interest (Tabla shorts)</h1>
+      <h1 style={{ color: editingId ? '#e65100' : 'black' }}>
+        {editingId ? `Editando Short: ${formData.symbol}` : "Gestión de Short Interest (Tabla shorts)"}
+      </h1>
 
-      {/* FORMULARIO */}
       <form
         onSubmit={handleSubmit}
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(3, 1fr)",
           gap: "15px",
-          background: "#fff3e0",
+          background: editingId ? "#fffde7" : "#fff3e0",
           padding: "20px",
           borderRadius: "8px",
-          border: "1px solid #ffe0b2",
+          border: editingId ? "2px solid #fb8c00" : "1px solid #ffe0b2",
         }}
       >
         <div>
@@ -76,9 +99,8 @@ export default function AdminShortsPage() {
           <input
             type="text"
             required
-            onChange={(e) =>
-              setFormData({ ...formData, company: e.target.value })
-            }
+            value={formData.company || ""}
+            onChange={(e) => setFormData({ ...formData, company: e.target.value })}
             style={{ width: "100%" }}
           />
         </div>
@@ -87,9 +109,8 @@ export default function AdminShortsPage() {
           <input
             type="text"
             required
-            onChange={(e) =>
-              setFormData({ ...formData, symbol: e.target.value })
-            }
+            value={formData.symbol || ""}
+            onChange={(e) => setFormData({ ...formData, symbol: e.target.value })}
             style={{ width: "100%" }}
           />
         </div>
@@ -98,31 +119,20 @@ export default function AdminShortsPage() {
           <input
             type="text"
             required
-            onChange={(e) =>
-              setFormData({ ...formData, market: e.target.value })
-            }
+            value={formData.market || ""}
+            onChange={(e) => setFormData({ ...formData, market: e.target.value })}
             style={{ width: "100%" }}
           />
         </div>
 
-        {[
-          "current_short",
-          "previous_short",
-          "outstanding",
-          "float",
-          "av_vol",
-        ].map((field) => (
+        {["current_short", "previous_short", "outstanding", "float", "av_vol"].map((field) => (
           <div key={field}>
             <label>{field.replace("_", " ").toUpperCase()}</label>
             <input
               type="number"
               required
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  [field]: parseInt(e.target.value) || 0,
-                })
-              }
+              value={formData[field] || 0}
+              onChange={(e) => setFormData({ ...formData, [field]: parseInt(e.target.value) || 0 })}
               style={{ width: "100%" }}
             />
           </div>
@@ -132,81 +142,62 @@ export default function AdminShortsPage() {
           <label>Date</label>
           <input
             type="date"
-            value={formData.date}
             required
+            value={formData.date || ""}
             onChange={(e) => setFormData({ ...formData, date: e.target.value })}
             style={{ width: "100%" }}
           />
         </div>
 
-        <button
-          type="submit"
-          style={{
-            gridColumn: "span 3",
-            padding: "12px",
-            background: "#fb8c00",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-            fontWeight: "bold",
-          }}
-        >
-          Registrar Posición Short
-        </button>
+        <div style={{ gridColumn: "span 3", display: "flex", gap: "10px" }}>
+          <button
+            type="submit"
+            style={{
+              flex: 1,
+              padding: "12px",
+              background: editingId ? "#e65100" : "#fb8c00",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+              fontWeight: "bold",
+            }}
+          >
+            {editingId ? "ACTUALIZAR POSICIÓN" : "REGISTRAR POSICIÓN SHORT"}
+          </button>
+          {editingId && (
+            <button type="button" onClick={cancelEdit} style={{ padding: "12px", background: "#6c757d", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}>
+              CANCELAR
+            </button>
+          )}
+        </div>
       </form>
 
-      {/* TABLA */}
       <div style={{ marginTop: "30px" }}>
-        <table
-          border="1"
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            textAlign: "center",
-          }}
-        >
+        <table border="1" style={{ width: "100%", borderCollapse: "collapse", textAlign: "center", fontSize: "14px" }}>
           <thead style={{ background: "#e65100", color: "white" }}>
             <tr>
-              <th>ID</th>
-              <th>Company</th>
-              <th>Symbol</th>
-              <th>Market</th>
-              <th>Current</th>
-              <th>Previous</th>
-              <th>Outst.</th>
-              <th>Float</th>
-              <th>Avg Vol</th>
-              <th>Date</th>
+              <th>ID</th><th>Company</th><th>Symbol</th><th>Market</th><th>Current</th><th>Previous</th><th>Outst.</th><th>Float</th><th>Avg Vol</th><th>Date</th><th>Acciones</th>
             </tr>
           </thead>
           <tbody>
             {data.map((item) => (
-              <tr key={item.id}>
+              <tr key={item.id} style={{ background: editingId === item.id ? "#fffde7" : "transparent" }}>
                 <td>{item.id}</td>
-                <td style={{ textAlign: "left", padding: "4px" }}>
-                  {item.company}
-                </td>
+                <td style={{ textAlign: "left", padding: "4px" }}>{item.company}</td>
                 <td>{item.symbol}</td>
                 <td>{item.market}</td>
-                <td>{item.current_short.toLocaleString()}</td>
-                <td>{item.previous_short.toLocaleString()}</td>
-                <td>{item.outstanding.toLocaleString()}</td>
-                <td>{item.float.toLocaleString()}</td>
-                <td>{item.av_vol.toLocaleString()}</td>
+                <td>{Number(item.current_short).toLocaleString()}</td>
+                <td>{Number(item.previous_short).toLocaleString()}</td>
+                <td>{Number(item.outstanding).toLocaleString()}</td>
+                <td>{Number(item.float).toLocaleString()}</td>
+                <td>{Number(item.av_vol).toLocaleString()}</td>
                 <td>{new Date(item.date).toLocaleDateString()}</td>
-                <td>
-                  <button
-                    onClick={() => handleDelete(item.id)}
-                    style={{
-                      background: "#ff4d4d",
-                      color: "white",
-                      border: "none",
-                      padding: "5px 10px",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                    }}
-                  >
+                <td style={{ display: "flex", gap: "5px", justifyContent: "center", padding: "5px" }}>
+                  <button onClick={() => startEdit(item)} style={{ background: "#007bff", color: "white", border: "none", padding: "5px 10px", borderRadius: "4px", cursor: "pointer" }}>
+                    Editar
+                  </button>
+                  <button onClick={() => handleDelete(item.id)} style={{ background: "#ff4d4d", color: "white", border: "none", padding: "5px 10px", borderRadius: "4px", cursor: "pointer" }}>
                     Eliminar
                   </button>
                 </td>
