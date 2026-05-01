@@ -28,7 +28,6 @@ export default function AdminShortsPage() {
 
   const startEdit = (item) => {
     setEditingId(item.id);
-    // Formateamos la fecha para que el input type="date" la reconozca (YYYY-MM-DD)
     const formattedDate = new Date(item.date).toISOString().split("T")[0];
     setFormData({ ...item, date: formattedDate });
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -96,79 +95,49 @@ export default function AdminShortsPage() {
       >
         <div>
           <label>Company</label>
-          <input
-            type="text"
-            required
-            value={formData.company || ""}
-            onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-            style={{ width: "100%" }}
-          />
+          <input type="text" required value={formData.company || ""} onChange={(e) => setFormData({ ...formData, company: e.target.value })} style={{ width: "100%" }} />
         </div>
         <div>
           <label>Symbol (Ticker)</label>
-          <input
-            type="text"
-            required
-            value={formData.symbol || ""}
-            onChange={(e) => setFormData({ ...formData, symbol: e.target.value })}
-            style={{ width: "100%" }}
-          />
+          <input type="text" required value={formData.symbol || ""} onChange={(e) => setFormData({ ...formData, symbol: e.target.value })} style={{ width: "100%" }} />
         </div>
         <div>
           <label>Market</label>
-          <input
-            type="text"
-            required
-            value={formData.market || ""}
-            onChange={(e) => setFormData({ ...formData, market: e.target.value })}
-            style={{ width: "100%" }}
-          />
+          <input type="text" required value={formData.market || ""} onChange={(e) => setFormData({ ...formData, market: e.target.value })} style={{ width: "100%" }} />
         </div>
 
-        {["current_short", "previous_short", "outstanding", "float", "av_vol"].map((field) => (
+        {["current_short", "previous_short"].map((field) => (
           <div key={field}>
             <label>{field.replace("_", " ").toUpperCase()}</label>
-            <input
-              type="number"
-              required
-              value={formData[field] || 0}
-              onChange={(e) => setFormData({ ...formData, [field]: parseInt(e.target.value) || 0 })}
-              style={{ width: "100%" }}
-            />
+            <input type="number" required value={formData[field] || 0} onChange={(e) => setFormData({ ...formData, [field]: parseInt(e.target.value) || 0 })} style={{ width: "100%" }} />
           </div>
         ))}
 
+        {/* outstanding y float con 1 decimal */}
+        {["outstanding", "float"].map((field) => (
+          <div key={field}>
+            <label>{field.replace("_", " ").toUpperCase()}</label>
+            <input type="number" step="0.1" required value={formData[field] || 0} onChange={(e) => setFormData({ ...formData, [field]: parseFloat(e.target.value) || 0 })} style={{ width: "100%" }} />
+          </div>
+        ))}
+
+        {/* av_vol con 3 decimales */}
+        <div>
+          <label>AV VOL (3 decimales)</label>
+          <input type="number" step="0.001" required value={formData.av_vol || 0} onChange={(e) => setFormData({ ...formData, av_vol: parseFloat(e.target.value) || 0 })} style={{ width: "100%" }} />
+        </div>
+
         <div>
           <label>Date</label>
-          <input
-            type="date"
-            required
-            value={formData.date || ""}
-            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-            style={{ width: "100%" }}
-          />
+          <input type="date" required value={formData.date || ""} onChange={(e) => setFormData({ ...formData, date: e.target.value })} style={{ width: "100%" }} />
         </div>
 
         <div style={{ gridColumn: "span 3", display: "flex", gap: "10px" }}>
-          <button
-            type="submit"
-            style={{
-              flex: 1,
-              padding: "12px",
-              background: editingId ? "#e65100" : "#fb8c00",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-              fontWeight: "bold",
-            }}
-          >
+          <button type="submit" style={{ flex: 1, padding: "12px", background: editingId ? "#e65100" : "#fb8c00", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}>
             {editingId ? "ACTUALIZAR POSICIÓN" : "REGISTRAR POSICIÓN SHORT"}
           </button>
           {editingId && (
-            <button type="button" onClick={cancelEdit} style={{ padding: "12px", background: "#6c757d", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}>
-              CANCELAR
-            </button>
+            <button type="button" onClick={cancelEdit} style={{ padding: "12px", background: "#6c757d", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}>CANCELAR</button>
           )}
         </div>
       </form>
@@ -177,7 +146,7 @@ export default function AdminShortsPage() {
         <table border="1" style={{ width: "100%", borderCollapse: "collapse", textAlign: "center", fontSize: "14px" }}>
           <thead style={{ background: "#e65100", color: "white" }}>
             <tr>
-              <th>ID</th><th>Company</th><th>Symbol</th><th>Market</th><th>Current</th><th>Previous</th><th>Outst.</th><th>Float</th><th>Avg Vol</th><th>Date</th><th>Acciones</th>
+              <th>ID</th><th>Company</th><th>Symbol</th><th>Market</th><th>Current</th><th>Previous</th><th>Outst. (1d)</th><th>Float (1d)</th><th>Avg Vol (3d)</th><th>Date</th><th>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -189,17 +158,13 @@ export default function AdminShortsPage() {
                 <td>{item.market}</td>
                 <td>{Number(item.current_short).toLocaleString()}</td>
                 <td>{Number(item.previous_short).toLocaleString()}</td>
-                <td>{Number(item.outstanding).toLocaleString()}</td>
-                <td>{Number(item.float).toLocaleString()}</td>
-                <td>{Number(item.av_vol).toLocaleString()}</td>
+                <td>{Number(item.outstanding).toFixed(1)}</td>
+                <td>{Number(item.float).toFixed(1)}</td>
+                <td>{Number(item.av_vol).toFixed(3)}</td>
                 <td>{new Date(item.date).toLocaleDateString()}</td>
                 <td style={{ display: "flex", gap: "5px", justifyContent: "center", padding: "5px" }}>
-                  <button onClick={() => startEdit(item)} style={{ background: "#007bff", color: "white", border: "none", padding: "5px 10px", borderRadius: "4px", cursor: "pointer" }}>
-                    Editar
-                  </button>
-                  <button onClick={() => handleDelete(item.id)} style={{ background: "#ff4d4d", color: "white", border: "none", padding: "5px 10px", borderRadius: "4px", cursor: "pointer" }}>
-                    Eliminar
-                  </button>
+                  <button onClick={() => startEdit(item)} style={{ background: "#007bff", color: "white", border: "none", padding: "5px 10px", borderRadius: "4px", cursor: "pointer" }}>Editar</button>
+                  <button onClick={() => handleDelete(item.id)} style={{ background: "#ff4d4d", color: "white", border: "none", padding: "5px 10px", borderRadius: "4px", cursor: "pointer" }}>Eliminar</button>
                 </td>
               </tr>
             ))}
