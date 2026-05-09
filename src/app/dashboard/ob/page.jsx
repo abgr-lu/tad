@@ -43,11 +43,7 @@ export default function OrderBookDashboard() {
                   <th style={thStyle}>2026</th>
                   <th style={thStyle}>2027</th>
                   <th style={thStyle}>2028</th>
-                  <th style={thStyle}>2029</th>
-                  <th style={thStyle}>2030</th>
                   <th style={thStyle}>Beyond</th>
-                  <th style={{ ...thStyle, background: '#f1f3f4' }}>Total Ord</th>
-                  <th style={{ ...thStyle, background: '#f1f3f4' }}>Total Units</th>
                 </tr>
               </thead>
               <tbody>
@@ -60,11 +56,7 @@ export default function OrderBookDashboard() {
                       <td style={tdStyle}>{item["2026"] || 0}</td>
                       <td style={tdStyle}>{item["2027"] || 0}</td>
                       <td style={tdStyle}>{item["2028"] || 0}</td>
-                      <td style={tdStyle}>{item["2029"] || 0}</td>
-                      <td style={tdStyle}>{item["2030"] || 0}</td>
                       <td style={tdStyle}>{item.beyond || 0}</td>
-                      <td style={{ ...tdStyle, fontWeight: 'bold' }}>{item.total_ord}</td>
-                      <td style={{ ...tdStyle, fontWeight: 'bold' }}>{item.total_units}</td>
                     </tr>
                   ))}
               </tbody>

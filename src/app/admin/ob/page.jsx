@@ -11,11 +11,7 @@ export default function AdminObPage() {
     2026: 0,
     2027: 0,
     2028: 0,
-    2029: 0,
-    2030: 0,
     beyond: 0,
-    total_ord: 0,
-    total_units: 0,
   });
 
   const fetchOb = () => {
@@ -32,25 +28,31 @@ export default function AdminObPage() {
   const startEdit = (item) => {
     setEditingId(item.id);
     setFormData(item);
-    window.scrollTo({ top: 0, behavior: 'smooth' }); // Sube al formulario
+    window.scrollTo({ top: 0, behavior: "smooth" }); // Sube al formulario
   };
 
   // Función para cancelar la edición
   const cancelEdit = () => {
     setEditingId(null);
     setFormData({
-      sector: "", type: "", 2025: 0, 2026: 0, 2027: 0, 2028: 0, 2029: 0, 2030: 0, beyond: 0, total_ord: 0, total_units: 0,
+      sector: "",
+      type: "",
+      2025: 0,
+      2026: 0,
+      2027: 0,
+      2028: 0,
+      beyond: 0,
     });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Si hay editingId usamos PUT (update), si no POST (insert)
     const method = editingId ? "PUT" : "POST";
     const endpoint = editingId ? "/api/admin/update" : "/api/admin/insert";
-    const payload = editingId 
-      ? { table: "ob", id: editingId, data: formData } 
+    const payload = editingId
+      ? { table: "ob", id: editingId, data: formData }
       : { table: "ob", data: formData };
 
     const res = await fetch(endpoint, {
@@ -84,8 +86,10 @@ export default function AdminObPage() {
 
   return (
     <div>
-      <h1 style={{ color: editingId ? 'orange' : 'black' }}>
-        {editingId ? `Editando ID: ${editingId}` : "Gestión de Order Book (Tabla ob)"}
+      <h1 style={{ color: editingId ? "orange" : "black" }}>
+        {editingId
+          ? `Editando ID: ${editingId}`
+          : "Gestión de Order Book (Tabla ob)"}
       </h1>
 
       {/* FORMULARIO CON INPUTS CONTROLADOS */}
@@ -103,13 +107,20 @@ export default function AdminObPage() {
       >
         <div style={{ gridColumn: "span 2" }}>
           <label>Sector</label>
-          <input
-            type="text"
+          <select
             required
             value={formData.sector || ""}
-            onChange={(e) => setFormData({ ...formData, sector: e.target.value })}
-            style={{ width: "100%" }}
-          />
+            onChange={(e) =>
+              setFormData({ ...formData, sector: e.target.value })
+            }
+            style={{ width: "100%", padding: "5px" }} // Añadí un pequeño padding para que se vea mejor
+          >
+            <option value="" disabled>
+              Seleccione un sector
+            </option>
+            <option value="Tankers">Tankers</option>
+            <option value="DB">DB</option>
+          </select>
         </div>
         <div style={{ gridColumn: "span 2" }}>
           <label>Type</label>
@@ -122,36 +133,24 @@ export default function AdminObPage() {
           />
         </div>
 
-        {["2025", "2026", "2027", "2028", "2029", "2030", "beyond"].map((year) => (
-          <div key={year}>
-            <label>{year.toUpperCase()}</label>
-            <input
-              type="number"
-              value={formData[year] || 0}
-              onChange={(e) => setFormData({ ...formData, [year]: parseInt(e.target.value) || 0 })}
-              style={{ width: "100%" }}
-            />
-          </div>
-        ))}
-
-        <div>
-          <label>Total Ord</label>
-          <input
-            type="number"
-            value={formData.total_ord || 0}
-            onChange={(e) => setFormData({ ...formData, total_ord: parseInt(e.target.value) || 0 })}
-            style={{ width: "100%" }}
-          />
-        </div>
-        <div>
-          <label>Total Units</label>
-          <input
-            type="number"
-            value={formData.total_units || 0}
-            onChange={(e) => setFormData({ ...formData, total_units: parseInt(e.target.value) || 0 })}
-            style={{ width: "100%" }}
-          />
-        </div>
+        {["2025", "2026", "2027", "2028", "beyond"].map(
+          (year) => (
+            <div key={year}>
+              <label>{year.toUpperCase()}</label>
+              <input
+                type="number"
+                value={formData[year] || 0}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    [year]: parseInt(e.target.value) || 0,
+                  })
+                }
+                style={{ width: "100%" }}
+              />
+            </div>
+          ),
+        )}
 
         <div style={{ gridColumn: "span 4", display: "flex", gap: "10px" }}>
           <button
@@ -169,7 +168,7 @@ export default function AdminObPage() {
           >
             {editingId ? "ACTUALIZAR REGISTRO" : "GUARDAR EN ORDER BOOK"}
           </button>
-          
+
           {editingId && (
             <button
               type="button"
@@ -191,30 +190,77 @@ export default function AdminObPage() {
 
       {/* TABLA */}
       <div style={{ marginTop: "30px", overflowX: "auto" }}>
-        <table border="1" style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px", textAlign: "center" }}>
+        <table
+          border="1"
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            fontSize: "13px",
+            textAlign: "center",
+          }}
+        >
           <thead style={{ background: "#343a40", color: "white" }}>
             <tr>
-              <th>ID</th><th>Sector</th><th>Type</th><th>2025</th><th>2026</th><th>2027</th><th>2028</th><th>2029</th><th>2030</th><th>Beyond</th><th>Total Ord</th><th>Total Units</th><th>Acciones</th>
+              <th>ID</th>
+              <th>Sector</th>
+              <th>Type</th>
+              <th>2025</th>
+              <th>2026</th>
+              <th>2027</th>
+              <th>2028</th>
+              <th>Beyond</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
             {data.map((item) => (
-              <tr key={item.id} style={{ background: editingId === item.id ? "#fff3e0" : "transparent" }}>
+              <tr
+                key={item.id}
+                style={{
+                  background: editingId === item.id ? "#fff3e0" : "transparent",
+                }}
+              >
                 <td>{item.id}</td>
-                <td style={{ textAlign: "left", padding: "4px" }}>{item.sector}</td>
+                <td style={{ textAlign: "left", padding: "4px" }}>
+                  {item.sector}
+                </td>
                 <td>{item.type}</td>
-                <td>{item["2025"]}</td><td>{item["2026"]}</td><td>{item["2027"]}</td><td>{item["2028"]}</td><td>{item["2029"]}</td><td>{item["2030"]}</td>
-                <td>{item.beyond}</td><td>{item.total_ord}</td><td>{item.total_units}</td>
-                <td style={{ display: "flex", gap: "5px", justifyContent: "center", padding: "5px" }}>
+                <td>{item["2025"]}</td>
+                <td>{item["2026"]}</td>
+                <td>{item["2027"]}</td>
+                <td>{item["2028"]}</td>
+                <td>{item.beyond}</td>
+                <td
+                  style={{
+                    display: "flex",
+                    gap: "5px",
+                    justifyContent: "center",
+                    padding: "5px",
+                  }}
+                >
                   <button
                     onClick={() => startEdit(item)}
-                    style={{ background: "#007bff", color: "white", border: "none", padding: "5px 10px", borderRadius: "4px", cursor: "pointer" }}
+                    style={{
+                      background: "#007bff",
+                      color: "white",
+                      border: "none",
+                      padding: "5px 10px",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                    }}
                   >
                     Editar
                   </button>
                   <button
                     onClick={() => handleDelete(item.id)}
-                    style={{ background: "#ff4d4d", color: "white", border: "none", padding: "5px 10px", borderRadius: "4px", cursor: "pointer" }}
+                    style={{
+                      background: "#ff4d4d",
+                      color: "white",
+                      border: "none",
+                      padding: "5px 10px",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                    }}
                   >
                     Eliminar
                   </button>

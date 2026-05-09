@@ -4,6 +4,12 @@ import { useEffect, useState } from "react";
 export default function AdminVsalesPage() {
   const [data, setData] = useState([]);
   const [editingId, setEditingId] = useState(null);
+  
+  // Estados para los filtros
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterBuyer, setFilterBuyer] = useState("");
+  const [filterSector, setFilterSector] = useState("");
+
   const [formData, setFormData] = useState({
     sector: "",
     type: "",
@@ -18,7 +24,7 @@ export default function AdminVsalesPage() {
     comments: "",
     year_r: new Date().getFullYear(),
     week: 1,
-    status: "",
+    status: "Reported", // 1. Cambiado a "Reported" por defecto
   });
 
   const fetchSales = () => {
@@ -31,6 +37,14 @@ export default function AdminVsalesPage() {
     fetchSales();
   }, []);
 
+  // Lógica de filtrado en tiempo real
+  const filteredData = data.filter((item) => {
+    const matchesName = (item.name || "").toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesBuyer = (item.buyer || "").toLowerCase().includes(filterBuyer.toLowerCase());
+    const matchesSector = filterSector === "" || item.sector === filterSector;
+    return matchesName && matchesBuyer && matchesSector;
+  });
+
   const startEdit = (item) => {
     setEditingId(item.id);
     setFormData(item);
@@ -40,10 +54,10 @@ export default function AdminVsalesPage() {
   const cancelEdit = () => {
     setEditingId(null);
     setFormData({
-      sector: "", type: "", name: "", dwt: 0, year_b: 2000,
-      yard: "", country: "", buyer: "", price: 0,
-      scrubber: false, comments: "", year_r: new Date().getFullYear(),
-      week: 1, status: "",
+      sector: "", type: "", name: "", dwt: 0, year_b: 2000, yard: "",
+      country: "", buyer: "", price: 0, scrubber: false, comments: "",
+      year_r: new Date().getFullYear(), week: 1, 
+      status: "Reported", // 1. Mantiene "Reported" al limpiar
     });
   };
 
@@ -51,8 +65,8 @@ export default function AdminVsalesPage() {
     e.preventDefault();
     const method = editingId ? "PUT" : "POST";
     const endpoint = editingId ? "/api/admin/update" : "/api/admin/insert";
-    const payload = editingId 
-      ? { table: "vsales", id: editingId, data: formData } 
+    const payload = editingId
+      ? { table: "vsales", id: editingId, data: formData }
       : { table: "vsales", data: formData };
 
     const res = await fetch(endpoint, {
@@ -63,7 +77,6 @@ export default function AdminVsalesPage() {
     if (res.ok) {
       alert(editingId ? "Venta actualizada" : "Venta añadida");
       cancelEdit();
-      e.target.reset();
       fetchSales();
     } else {
       alert("Error al procesar la solicitud");
@@ -76,21 +89,17 @@ export default function AdminVsalesPage() {
         method: "DELETE",
         body: JSON.stringify({ table: "vsales", id }),
       });
-
-      if (res.ok) {
-        fetchSales();
-      } else {
-        alert("Error al eliminar");
-      }
+      if (res.ok) fetchSales();
     }
   };
 
   return (
-    <div>
+    <div style={{ padding: "20px", fontFamily: "sans-serif", fontSize: "14px" }}>
       <h1 style={{ color: editingId ? "#1976d2" : "black" }}>
         {editingId ? `Editando Buque: ${formData.name}` : "Gestión de Vessel Sales (Tabla vsales)"}
       </h1>
 
+      {/* FORMULARIO COMPLETO */}
       <form
         onSubmit={handleSubmit}
         style={{
@@ -101,187 +110,170 @@ export default function AdminVsalesPage() {
           padding: "20px",
           borderRadius: "8px",
           border: editingId ? "2px solid #1976d2" : "1px solid #bbdefb",
+          marginBottom: "40px"
         }}
       >
         <div style={{ gridColumn: "span 2" }}>
           <label>Nombre del Buque</label>
-          <input
-            type="text"
-            required
-            value={formData.name || ""}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            style={{ width: "100%" }}
-          />
+          <input type="text" required value={formData.name || ""} onChange={(e) => setFormData({ ...formData, name: e.target.value })} style={{ width: "100%" }} />
         </div>
         <div>
           <label>Sector</label>
-          <input
-            type="text"
-            required
-            value={formData.sector || ""}
-            onChange={(e) => setFormData({ ...formData, sector: e.target.value })}
-            style={{ width: "100%" }}
-          />
+          <select required value={formData.sector || ""} onChange={(e) => setFormData({ ...formData, sector: e.target.value })} style={{ width: "100%", padding: "5px" }}>
+            <option value="" disabled>Seleccione sector</option>
+            <option value="Tankers">Tankers</option>
+            <option value="DB">DB</option>
+          </select>
         </div>
         <div>
           <label>Tipo</label>
-          <input
-            type="text"
-            required
-            value={formData.type || ""}
-            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-            style={{ width: "100%" }}
-          />
+          <input type="text" required value={formData.type || ""} onChange={(e) => setFormData({ ...formData, type: e.target.value })} style={{ width: "100%" }} />
         </div>
 
         <div>
           <label>DWT</label>
-          <input
-            type="number"
-            required
-            value={formData.dwt || 0}
-            onChange={(e) => setFormData({ ...formData, dwt: parseInt(e.target.value) || 0 })}
-            style={{ width: "100%" }}
-          />
+          <input type="number" required value={formData.dwt || 0} onChange={(e) => setFormData({ ...formData, dwt: parseInt(e.target.value) || 0 })} style={{ width: "100%" }} />
         </div>
         <div>
           <label>Año Construcción</label>
-          <input
-            type="number"
-            required
-            value={formData.year_b || 0}
-            onChange={(e) => setFormData({ ...formData, year_b: parseInt(e.target.value) || 0 })}
-            style={{ width: "100%" }}
-          />
+          <input type="number" required value={formData.year_b || 0} onChange={(e) => setFormData({ ...formData, year_b: parseInt(e.target.value) || 0 })} style={{ width: "100%" }} />
         </div>
         <div>
           <label>Astillero (Yard)</label>
-          <input
-            type="text"
-            value={formData.yard || ""}
-            onChange={(e) => setFormData({ ...formData, yard: e.target.value })}
-            style={{ width: "100%" }}
-          />
+          <input type="text" value={formData.yard || ""} onChange={(e) => setFormData({ ...formData, yard: e.target.value })} style={{ width: "100%" }} />
         </div>
         <div>
           <label>País</label>
-          <input
-            type="text"
-            value={formData.country || ""}
-            onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-            style={{ width: "100%" }}
-          />
+          <input type="text" value={formData.country || ""} onChange={(e) => setFormData({ ...formData, country: e.target.value })} style={{ width: "100%" }} />
         </div>
 
         <div>
           <label>Comprador</label>
-          <input
-            type="text"
-            value={formData.buyer || ""}
-            onChange={(e) => setFormData({ ...formData, buyer: e.target.value })}
-            style={{ width: "100%" }}
-          />
+          <input type="text" value={formData.buyer || ""} onChange={(e) => setFormData({ ...formData, buyer: e.target.value })} style={{ width: "100%" }} />
         </div>
         <div>
           <label>Precio (M$)</label>
-          <input
-            type="number"
-            step="0.01"
-            value={formData.price || 0}
-            onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
-            style={{ width: "100%" }}
-          />
+          <input type="number" step="0.01" value={formData.price || 0} onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })} style={{ width: "100%" }} />
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", paddingTop: "20px" }}>
           <label>Scrubber</label>
-          <input
-            type="checkbox"
-            checked={formData.scrubber || false}
-            onChange={(e) => setFormData({ ...formData, scrubber: e.target.checked })}
-          />
+          <input type="checkbox" checked={formData.scrubber || false} onChange={(e) => setFormData({ ...formData, scrubber: e.target.checked })} />
         </div>
         <div>
           <label>Estado</label>
-          <input
-            type="text"
-            value={formData.status || ""}
-            onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-            style={{ width: "100%" }}
-          />
+          <input type="text" value={formData.status || ""} onChange={(e) => setFormData({ ...formData, status: e.target.value })} style={{ width: "100%" }} />
         </div>
 
         <div style={{ gridColumn: "span 2" }}>
           <label>Comentarios</label>
-          <input
-            type="text"
-            value={formData.comments || ""}
-            onChange={(e) => setFormData({ ...formData, comments: e.target.value })}
-            style={{ width: "100%" }}
-          />
+          <input type="text" value={formData.comments || ""} onChange={(e) => setFormData({ ...formData, comments: e.target.value })} style={{ width: "100%" }} />
         </div>
         <div>
           <label>Año Reporte</label>
-          <input
-            type="number"
-            value={formData.year_r || 0}
-            onChange={(e) => setFormData({ ...formData, year_r: parseInt(e.target.value) || 0 })}
-            style={{ width: "100%" }}
-          />
+          <input type="number" value={formData.year_r || 0} onChange={(e) => setFormData({ ...formData, year_r: parseInt(e.target.value) || 0 })} style={{ width: "100%" }} />
         </div>
         <div>
           <label>Semana</label>
-          <input
-            type="number"
-            value={formData.week || 0}
-            onChange={(e) => setFormData({ ...formData, week: parseInt(e.target.value) || 0 })}
-            style={{ width: "100%" }}
-          />
+          <input type="number" value={formData.week || 0} onChange={(e) => setFormData({ ...formData, week: parseInt(e.target.value) || 0 })} style={{ width: "100%" }} />
         </div>
 
-        <div style={{ gridColumn: "span 4", display: "flex", gap: "10px" }}>
-          <button
-            type="submit"
-            style={{ flex: 1, padding: "12px", background: editingId ? "#0288d1" : "#1976d2", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
-          >
-            {editingId ? "ACTUALIZAR VENTA" : "AÑADIR VENTA"}
+        <div style={{ gridColumn: "span 4", display: "flex", gap: "10px", marginTop: "10px" }}>
+          <button type="submit" style={{ padding: "10px 20px", background: "#2e7d32", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}>
+            {editingId ? "Actualizar Registro" : "Añadir a Base de Datos"}
           </button>
           {editingId && (
-            <button type="button" onClick={cancelEdit} style={{ padding: "12px", background: "#666", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}>
-              CANCELAR
+            <button type="button" onClick={cancelEdit} style={{ padding: "10px 20px", background: "#757575", color: "white", border: "none", borderRadius: "4px" }}>
+              Cancelar Edición
             </button>
           )}
         </div>
       </form>
 
-      <div style={{ marginTop: "30px", overflowX: "auto" }}>
-        <table border="1" style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px", textAlign: "center" }}>
-          <thead style={{ background: "#0d47a1", color: "white" }}>
-            <tr>
-              <th>ID</th><th>Buque</th><th>Sector</th><th>DWT</th><th>Año B.</th><th>Precio</th><th>Scrub.</th><th>Buyer</th><th>Año R.</th><th>Sem</th><th>Acciones</th>
+      <hr />
+
+      {/* SECCIÓN DE FILTROS */}
+      <div style={{ background: "#f5f5f5", padding: "20px", borderRadius: "8px", margin: "20px 0", border: "1px solid #ddd" }}>
+        <h3 style={{ marginTop: 0 }}>🔍 Filtros de Búsqueda</h3>
+        <div style={{ display: "flex", gap: "15px", flexWrap: "wrap" }}>
+          <div style={{ flex: "1", minWidth: "200px" }}>
+            <label style={{ fontSize: "12px", fontWeight: "bold" }}>NOMBRE DEL BARCO</label>
+            <input type="text" placeholder="Buscar por nombre..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ width: "100%", padding: "8px", marginTop: "5px" }} />
+          </div>
+          <div style={{ flex: "1", minWidth: "200px" }}>
+            <label style={{ fontSize: "12px", fontWeight: "bold" }}>COMPRADOR (BUYER)</label>
+            <input type="text" placeholder="Filtrar comprador..." value={filterBuyer} onChange={(e) => setFilterBuyer(e.target.value)} style={{ width: "100%", padding: "8px", marginTop: "5px" }} />
+          </div>
+          <div style={{ width: "200px" }}>
+            <label style={{ fontSize: "12px", fontWeight: "bold" }}>SECTOR</label>
+            <select value={filterSector} onChange={(e) => setFilterSector(e.target.value)} style={{ width: "100%", padding: "8px", marginTop: "5px" }}>
+              <option value="">Todos los sectores</option>
+              <option value="Tankers">Tankers</option>
+              <option value="DB">DB</option>
+            </select>
+          </div>
+          <div style={{ display: "flex", alignItems: "flex-end" }}>
+            <button onClick={() => { setSearchTerm(""); setFilterBuyer(""); setFilterSector(""); }} style={{ padding: "8px 15px", cursor: "pointer" }}>
+              Limpiar Filtros
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* LISTADO DE BARCOS VENDIDOS - 2. TODOS LOS CAMPOS INCLUIDOS */}
+      <div style={{ overflowX: "auto" }}> {/* Contenedor para scroll horizontal por si la pantalla es estrecha */}
+        <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "10px", fontSize: "12px" }}>
+          <thead>
+            <tr style={{ background: "#444", color: "white" }}>
+              <th style={{ padding: "8px", textAlign: "left" }}>ID</th>
+              <th style={{ padding: "8px", textAlign: "left" }}>Nombre</th>
+              <th style={{ padding: "8px", textAlign: "left" }}>Sector</th>
+              <th style={{ padding: "8px", textAlign: "left" }}>Tipo</th>
+              <th style={{ padding: "8px", textAlign: "left" }}>DWT</th>
+              <th style={{ padding: "8px", textAlign: "left" }}>Año Const.</th>
+              <th style={{ padding: "8px", textAlign: "left" }}>Astillero</th>
+              <th style={{ padding: "8px", textAlign: "left" }}>País</th>
+              <th style={{ padding: "8px", textAlign: "left" }}>Comprador</th>
+              <th style={{ padding: "8px", textAlign: "left" }}>Precio</th>
+              <th style={{ padding: "8px", textAlign: "center" }}>Scrub.</th>
+              <th style={{ padding: "8px", textAlign: "left" }}>Estado</th>
+              <th style={{ padding: "8px", textAlign: "left" }}>Año Rep.</th>
+              <th style={{ padding: "8px", textAlign: "left" }}>Sem.</th>
+              <th style={{ padding: "8px", textAlign: "left" }}>Comentarios</th>
+              <th style={{ padding: "8px", textAlign: "center" }}>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {data.map((item) => (
-              <tr key={item.id} style={{ background: editingId === item.id ? "#e1f5fe" : "transparent" }}>
-                <td>{item.id}</td>
-                <td style={{ textAlign: "left", fontWeight: "bold" }}>{item.name}</td>
-                <td>{item.sector}</td>
-                <td>{item.dwt?.toLocaleString()}</td>
-                <td>{item.year_b}</td>
-                <td style={{ color: "green", fontWeight: "bold" }}>{item.price} M</td>
-                <td>{item.scrubber ? "✅" : "❌"}</td>
-                <td>{item.buyer || "-"}</td>
-                <td>{item.year_r}</td>
-                <td>{item.week}</td>
-                <td style={{ display: "flex", gap: "5px", justifyContent: "center", padding: "5px" }}>
-                  <button onClick={() => startEdit(item)} style={{ background: "#007bff", color: "white", border: "none", padding: "5px 10px", borderRadius: "4px", cursor: "pointer" }}>Editar</button>
-                  <button onClick={() => handleDelete(item.id)} style={{ background: "#ff4d4d", color: "white", border: "none", padding: "5px 10px", borderRadius: "4px", cursor: "pointer" }}>Eliminar</button>
+            {filteredData.map((item) => (
+              <tr key={item.id} style={{ borderBottom: "1px solid #eee" }}>
+                <td style={{ padding: "8px" }}>{item.id}</td>
+                <td style={{ padding: "8px" }}><strong>{item.name}</strong></td>
+                <td style={{ padding: "8px" }}>{item.sector}</td>
+                <td style={{ padding: "8px" }}>{item.type}</td>
+                <td style={{ padding: "8px" }}>{item.dwt}</td>
+                <td style={{ padding: "8px" }}>{item.year_b}</td>
+                <td style={{ padding: "8px" }}>{item.yard || "-"}</td>
+                <td style={{ padding: "8px" }}>{item.country || "-"}</td>
+                <td style={{ padding: "8px" }}>{item.buyer || "-"}</td>
+                <td style={{ padding: "8px" }}>{item.price} M$</td>
+                <td style={{ padding: "8px", textAlign: "center" }}>{item.scrubber ? "✅" : "❌"}</td>
+                <td style={{ padding: "8px" }}><span style={{ background: item.status === "Reported" ? "#e8f5e9" : "#fffde7", padding: "2px 6px", borderRadius: "4px" }}>{item.status || "-"}</span></td>
+                <td style={{ padding: "8px" }}>{item.year_r}</td>
+                <td style={{ padding: "8px" }}>{item.week}</td>
+                <td style={{ padding: "8px", maxWidth: "150px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={item.comments}>{item.comments || "-"}</td>
+                <td style={{ padding: "8px", textAlign: "center", whiteSpace: "nowrap" }}>
+                  <button onClick={() => startEdit(item)} style={{ marginRight: "3px", padding: "3px 6px", background: "#1976d2", color: "white", border: "none", borderRadius: "3px", cursor: "pointer" }}>Editar</button>
+                  <button onClick={() => handleDelete(item.id)} style={{ padding: "3px 6px", background: "#d32f2f", color: "white", border: "none", borderRadius: "3px", cursor: "pointer" }}>Borrar</button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      {filteredData.length === 0 && (
+        <div style={{ textAlign: "center", padding: "40px", color: "#666" }}>
+          No se encontraron registros que coincidan con la búsqueda.
+        </div>
+      )}
     </div>
   );
 }
