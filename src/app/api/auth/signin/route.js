@@ -48,7 +48,7 @@ export async function POST(request) {
   });
 
   // 6. Determinar redirección
-  const redirectTo = user.super ? '/admin/panel-control' : '/dashboard';
+  const redirectTo = user.super ? '/admin' : '/dashboard';
 
   return NextResponse.json({ 
     message: "Login exitoso",

@@ -24,10 +24,10 @@ export default function VSalesDashboard() {
   if (!selectedSector) {
     return (
       <div style={{ textAlign: 'center', marginTop: '100px' }}>
-        <h1>🚢 Selecciona un Sector</h1>
+        {/* <h1>🚢 Selecciona un Sector</h1> */}
         <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginTop: '40px' }}>
-          <SectorCard title="TANKERS" onClick={() => setSelectedSector('tanker')} icon="🛢️" />
-          <SectorCard title="DRY BULK (DB)" onClick={() => setSelectedSector('db')} icon="🏗️" />
+          <SectorCard title="TANKERS" onClick={() => setSelectedSector('tankers')} />
+          <SectorCard title="DRY BULK (DB)" onClick={() => setSelectedSector('db')} />
         </div>
       </div>
     );
@@ -55,7 +55,8 @@ export default function VSalesDashboard() {
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
           <thead>
             <tr style={{ background: '#f8f9fa', borderBottom: '2px solid #eee' }}>
-              <th style={thStyle}>ID</th>
+              <th style={thStyle}>Año R.</th>
+              <th style={thStyle}>Semana</th>
               <th style={thStyle}>Nombre</th>
               <th style={thStyle}>Tipo</th>
               <th style={thStyle}>DWT</th>
@@ -66,15 +67,14 @@ export default function VSalesDashboard() {
               <th style={thStyle}>Precio (M$)</th>
               <th style={thStyle}>Scrubber</th>
               <th style={thStyle}>Status</th>
-              <th style={thStyle}>Año R.</th>
-              <th style={thStyle}>Semana</th>
               <th style={thStyle}>Comentarios</th>
             </tr>
           </thead>
           <tbody>
             {filteredData.map((item, index) => (
               <tr key={item.id} style={{ borderBottom: '1px solid #eee', background: index % 2 === 0 ? '#fff' : '#fafafa' }}>
-                <td style={tdStyle}>{item.id}</td>
+                <td style={tdStyle}>{item.year_r}</td>
+                <td style={tdStyle}>{item.week}</td>
                 <td style={{ ...tdStyle, fontWeight: 'bold' }}>{item.name}</td>
                 <td style={tdStyle}>{item.type}</td>
                 <td style={tdStyle}>{item.dwt?.toLocaleString()}</td>
@@ -85,8 +85,6 @@ export default function VSalesDashboard() {
                 <td style={{ ...tdStyle, fontWeight: 'bold', color: '#188038' }}>{item.price || '-'}</td>
                 <td style={tdStyle}>{item.scrubber ? '✅' : '❌'}</td>
                 <td style={tdStyle}>{item.status || '-'}</td>
-                <td style={tdStyle}>{item.year_r}</td>
-                <td style={tdStyle}>{item.week}</td>
                 <td style={{ ...tdStyle, fontSize: '11px', color: '#666', maxWidth: '200px' }}>{item.comments}</td>
               </tr>
             ))}

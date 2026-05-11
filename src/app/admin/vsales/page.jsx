@@ -38,8 +38,10 @@ export default function AdminVsalesPage() {
     fetchSales();
   }, []);
 
+  const [displayLimit, setDisplayLimit] = useState(50);
+
   // Lógica de filtrado en tiempo real
-  const filteredData = data.filter((item) => {
+  const allFiltered = data.filter((item) => {
     const matchesName = (item.name || "")
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
@@ -49,6 +51,8 @@ export default function AdminVsalesPage() {
     const matchesSector = filterSector === "" || item.sector === filterSector;
     return matchesName && matchesBuyer && matchesSector;
   });
+
+  const visibleData = allFiltered.slice(0, displayLimit);
 
   const startEdit = (item) => {
     setEditingId(item.id);
@@ -146,10 +150,10 @@ export default function AdminVsalesPage() {
 
   // Función para seleccionar o deseleccionar todos los filtrados
   const toggleAll = () => {
-    if (selectedIds.length === filteredData.length) {
+    if (selectedIds.length === allFiltered.length) {
       setSelectedIds([]);
     } else {
-      setSelectedIds(filteredData.map((item) => item.id));
+      setSelectedIds(allFiltered.map((item) => item.id));
     }
   };
 
@@ -541,12 +545,11 @@ export default function AdminVsalesPage() {
                   type="checkbox"
                   onChange={toggleAll}
                   checked={
-                    selectedIds.length === filteredData.length &&
-                    filteredData.length > 0
+                    selectedIds.length === allFiltered.length &&
+                    allFiltered.length > 0
                   }
                 />
               </th>
-              <th style={{ padding: "8px", textAlign: "left" }}>ID</th>
               <th style={{ padding: "8px", textAlign: "left" }}>Nombre</th>
               <th style={{ padding: "8px", textAlign: "left" }}>Sector</th>
               <th style={{ padding: "8px", textAlign: "left" }}>Tipo</th>
@@ -563,21 +566,21 @@ export default function AdminVsalesPage() {
               <th style={{ padding: "8px", textAlign: "left" }}>Comentarios</th>
               <th style={{ padding: "8px", textAlign: "center" }}>Acciones</th>
               <th style={{ padding: "8px", textAlign: "center" }}>
-                <button 
-  onClick={handleBulkDelete}
-  disabled={selectedIds.length === 0}
-  style={{
-    background: selectedIds.length > 0 ? "#d32f2f" : "#ccc",
-    cursor: selectedIds.length > 0 ? "pointer" : "not-allowed",
-  }}
->
-  S ({selectedIds.length})
-</button>
+                <button
+                  onClick={handleBulkDelete}
+                  disabled={selectedIds.length === 0}
+                  style={{
+                    background: selectedIds.length > 0 ? "#d32f2f" : "#ccc",
+                    cursor: selectedIds.length > 0 ? "pointer" : "not-allowed",
+                  }}
+                >
+                  S ({selectedIds.length})
+                </button>
               </th>
             </tr>
           </thead>
           <tbody>
-            {filteredData.map((item) => (
+            {allFiltered.map((item) => (
               <tr
                 key={item.id}
                 style={{
@@ -674,8 +677,28 @@ export default function AdminVsalesPage() {
             ))}
           </tbody>
         </table>
+        {allFiltered.length > displayLimit && (
+          <div style={{ textAlign: "center", padding: "20px" }}>
+            <p>
+              Mostrando {displayLimit} de {allFiltered.length} barcos
+            </p>
+            <button
+              onClick={() => setDisplayLimit((prev) => prev + 50)}
+              style={{
+                padding: "10px 20px",
+                cursor: "pointer",
+                background: "#1976d2",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+              }}
+            >
+              Cargar más registros...
+            </button>
+          </div>
+        )}
       </div>
-      {filteredData.length === 0 && (
+      {allFiltered.length === 0 && (
         <div style={{ textAlign: "center", padding: "40px", color: "#666" }}>
           No se encontraron registros que coincidan con la búsqueda.
         </div>

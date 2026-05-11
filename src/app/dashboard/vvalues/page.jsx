@@ -14,7 +14,7 @@ export default function VValuesDashboard() {
     <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
       <header style={{ marginBottom: '30px' }}>
         <h1 style={{ fontSize: '24px', color: '#202124' }}>📈 Market V-Values</h1>
-        <p style={{ color: '#5f6368' }}>Valores históricos y actuales por sector y edad del buque.</p>
+        {/* <p style={{ color: '#5f6368' }}>Valores históricos y actuales por sector y edad del buque.</p> */}
       </header>
 
       <div style={{ 
