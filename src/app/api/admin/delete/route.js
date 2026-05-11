@@ -1,29 +1,31 @@
 import { query } from '@/lib/db';
-import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
 export async function DELETE(request) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('session_token')?.value;
-
-  // 1. Verificar Super Admin
-  const userRes = await query(
-    'SELECT u.super FROM users u JOIN sessions s ON u.id = s.user_id WHERE s.session_token = $1',
-    [token]
-  );
-
-  if (!userRes.rows[0]?.super) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 403 });
-  }
-
-  const { table, id } = await request.json();
-
   try {
-    // 2. Ejecutar el borrado
-    await query(`DELETE FROM "${table}" WHERE id = $1`, [id]);
-    return NextResponse.json({ message: "Registro eliminado" });
+    const { table, id, ids } = await request.json();
+
+    // 1. Validación de tabla para evitar inyecciones SQL (añade tus tablas permitidas)
+    const allowedTables = ['vsales', 'users', 'sessions'];
+    if (!allowedTables.includes(table)) {
+      return NextResponse.json({ error: "Tabla no permitida" }, { status: 400 });
+    }
+
+    // 2. Lógica de borrado múltiple o individual
+    if (ids && Array.isArray(ids)) {
+      // Borrado masivo usando ANY para mayor eficiencia
+      await query(`DELETE FROM ${table} WHERE id = ANY($1::int[])`, [ids]);
+      return NextResponse.json({ message: `${ids.length} registros eliminados` });
+    } else if (id) {
+      // Borrado individual (mantiene compatibilidad con el botón de siempre)
+      await query(`DELETE FROM ${table} WHERE id = $1`, [id]);
+      return NextResponse.json({ message: "Registro eliminado" });
+    }
+
+    return NextResponse.json({ error: "Faltan parámetros de ID" }, { status: 400 });
+
   } catch (error) {
-    console.error("ERROR EN DELETE:", error);
-    return NextResponse.json({ error: "Error al eliminar" }, { status: 500 });
+    console.error("Error en DELETE API:", error);
+    return NextResponse.json({ error: "Error de servidor al eliminar" }, { status: 500 });
   }
 }
