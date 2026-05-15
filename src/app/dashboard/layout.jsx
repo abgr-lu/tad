@@ -16,7 +16,8 @@ export default function DashboardLayout({ children }) {
   }, []);
 
   const sidebarLinks = [
-    { name: "🏢 Compañías", href: "/dashboard" },
+    { name: "🏢 Inicio", href: "/dashboard" },
+    { name: "🏢 Compañías", href: "/dashboard/companies" },
     { name: "📊 V-Values", href: "/dashboard/vvalues" },
     { name: "🚢 V-Sales", href: "/dashboard/vsales" },
     { name: "📋 Order Book", href: "/dashboard/ob" },
