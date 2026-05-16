@@ -5,31 +5,61 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   let table = searchParams.get('table');
   
-  // Parámetros de paginación y búsqueda
+  // Pagination and search parameters
   const limit = parseInt(searchParams.get('limit')) || 50;
   const offset = parseInt(searchParams.get('offset')) || 0;
   const search = searchParams.get('search') || "";
 
-  // Mapeo: si la URL es /admin/vvalues, buscamos en la tabla 'vv'
+  // Table mapping (vvalues -> vv)
   if (table === 'vvalues') table = 'vv';
 
   try {
     let sql = "";
     let values = [];
+    const searchTerm = `%${search}%`;
 
-    // Lógica específica para vsales (Búsqueda y Paginación)
+    // 1. SPECIFIC LOGIC FOR VSALES (Detailed Global Search)
     if (table === 'vsales') {
-      // Usamos ILIKE para búsqueda insensible a mayúsculas
-      // sector::text asegura que si es un tipo ENUM, se pueda comparar con el string de búsqueda
       sql = `
         SELECT * FROM "vsales" 
-        WHERE (name ILIKE $1 OR sector::text ILIKE $1)
+        WHERE (
+          name ILIKE $1 OR 
+          type ILIKE $1 OR 
+          buyer ILIKE $1 OR 
+          yard ILIKE $1 OR 
+          country ILIKE $1 OR 
+          sector::text ILIKE $1
+        )
         ORDER BY year_r DESC, week DESC, id DESC
         LIMIT $2 OFFSET $3
       `;
-      values = [`%${search}%`, limit, offset];
-    } else {
-      // Para el resto de tablas, mantenemos la carga estándar pero con orden descendente
+      values = [searchTerm, limit, offset];
+    } 
+    
+    // 2. SEARCH LOGIC FOR SHORTS
+    else if (table === 'shorts') {
+      sql = `
+        SELECT * FROM "shorts"
+        WHERE (symbol ILIKE $1 OR company ILIKE $1)
+        ORDER BY id DESC
+        LIMIT $2 OFFSET $3
+      `;
+      values = [searchTerm, limit, offset];
+    }
+
+    // 3. SEARCH LOGIC FOR VV AND OB
+    else if (table === 'vv' || table === 'ob') {
+      sql = `
+        SELECT * FROM "${table}"
+        WHERE (type ILIKE $1 OR sector::text ILIKE $1)
+        ORDER BY id DESC
+        LIMIT $2 OFFSET $3
+      `;
+      values = [searchTerm, limit, offset];
+    }
+
+    // 4. FALLBACK FOR ANY OTHER TABLE
+    else {
       sql = `SELECT * FROM "${table}" ORDER BY id DESC LIMIT $1 OFFSET $2`;
       values = [limit, offset];
     }
@@ -38,8 +68,8 @@ export async function GET(request) {
     return NextResponse.json(res.rows);
 
   } catch (e) {
-    console.error("ERROR EN READ API:", e);
-    // Devolvemos [] para evitar que .map() falle en el frontend
+    console.error("READ API ERROR:", e);
+    // Return empty array to prevent frontend crashes on .map()
     return NextResponse.json([]); 
   }
 }

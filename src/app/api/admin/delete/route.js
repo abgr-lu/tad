@@ -1,47 +1,27 @@
+// src/app/api/admin/delete/route.js
 import { query } from '@/lib/db';
 import { NextResponse } from 'next/server';
 
-export async function DELETE(request) {
+export async function POST(request) {
   try {
-    let { table, id, ids } = await request.json();
+    const { table, id } = await request.json();
 
-    // 1. Mapeo de nombres de tablas (para mantener consistencia con el resto del proyecto)
-    if (table === 'vvalues') table = 'vv';
-
-    // 2. Validación de tabla (Lista blanca de seguridad)
-    // Añadimos 'shorts', 'vv' y 'ob' a las tablas permitidas
-    const allowedTables = ['vsales', 'vv', 'shorts', 'ob', 'users', 'sessions'];
-    
-    if (!allowedTables.includes(table)) {
-      return NextResponse.json({ error: "Acceso denegado a la tabla" }, { status: 403 });
+    if (!table || !id) {
+      return NextResponse.json({ error: "Faltan parámetros (table o id)" }, { status: 400 });
     }
 
-    // 3. Lógica de borrado múltiple
-    if (ids && Array.isArray(ids) && ids.length > 0) {
-      // Usamos ANY($1::int[]) para eliminar todos los IDs en una sola consulta
-      await query(`DELETE FROM "${table}" WHERE id = ANY($1::int[])`, [ids]);
-      return NextResponse.json({ 
-        success: true, 
-        message: `${ids.length} registros eliminados correctamente.` 
-      });
-    } 
-    
-    // 4. Lógica de borrado individual (el botón de la papelera)
-    if (id) {
-      await query(`DELETE FROM "${table}" WHERE id = $1`, [id]);
-      return NextResponse.json({ 
-        success: true, 
-        message: "Registro eliminado correctamente." 
-      });
+    // Usamos comillas dobles para el nombre de la tabla por si tiene mayúsculas
+    const sql = `DELETE FROM "${table}" WHERE id = $1 RETURNING *`;
+    const res = await query(sql, [id]);
+
+    if (res.rowCount === 0) {
+      return NextResponse.json({ error: "No se encontró el registro" }, { status: 404 });
     }
 
-    return NextResponse.json({ error: "No se proporcionó un ID válido" }, { status: 400 });
+    return NextResponse.json({ success: true, message: "Registro eliminado correctamente" });
 
   } catch (error) {
-    console.error("ERROR EN DELETE API:", error);
-    return NextResponse.json({ 
-      error: "Error interno al intentar eliminar el registro",
-      details: error.message 
-    }, { status: 500 });
+    console.error("DELETE API ERROR:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

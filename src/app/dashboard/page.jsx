@@ -41,7 +41,7 @@ export default function DashboardHome() {
       {/* ACCESOS RÁPIDOS */}
       <h3 style={{ marginBottom: '20px', color: '#333' }}>🚀 Acceso Rápido</h3>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '40px' }}>
-        <QuickLink href="/dashboard" title="Compañías" desc="Directorio de empresas" icon="🏢" color="#1a73e8" />
+        <QuickLink href="/dashboard/companies" title="Compañías" desc="Directorio de empresas" icon="🏢" color="#1a73e8" />
         <QuickLink href="/dashboard/vvalues" title="V-Values" desc="Valores de mercado" icon="📊" color="#34a853" />
         <QuickLink href="/dashboard/vsales" title="V-Sales" desc="Ventas recientes" icon="🚢" color="#fbbc04" />
       </div>

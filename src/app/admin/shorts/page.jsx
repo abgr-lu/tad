@@ -10,7 +10,7 @@ export default function AdminShortsPage() {
   const [hasMore, setHasMore] = useState(true);
   const LIMIT = 50;
 
-  // 1. CARGA DE DATOS
+  // 1. DATA LOAD (PAGINATION)
   const loadData = useCallback(async (isInitial = false) => {
     const currentOffset = isInitial ? 0 : offset;
     const url = `/api/admin/read?table=shorts&limit=${LIMIT}&offset=${currentOffset}`;
@@ -27,7 +27,7 @@ export default function AdminShortsPage() {
 
   useEffect(() => { loadData(true); }, []);
 
-  // 2. SUBIDA CSV
+  // 2. CSV UPLOAD WITH DUPLICATE PROTECTION
   const handleCSVUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -39,35 +39,58 @@ export default function AdminShortsPage() {
       transformHeader: (h) => h.trim().toLowerCase(),
       complete: async (results) => {
         const cleanNum = (v) => v ? parseFloat(String(v).replace(/[^0-9.-]/g, '')) || 0 : 0;
-        const formattedData = results.data
-          .filter(r => r.symbol)
-          .map(r => ({
-            company: r.company || "",
-            symbol: String(r.symbol).trim().toUpperCase(),
-            market: r.market || "",
-            current_short: cleanNum(r.current_short),
-            previous_short: cleanNum(r.previous_short),
-            outstanding: cleanNum(r.outstanding),
-            float: cleanNum(r.float),
-            av_vol: cleanNum(r.av_vol),
-            date: r.date || ""
-          }));
+        
+        // Use a Map to ensure each symbol is unique within this batch
+        const uniqueDataMap = new Map();
 
-        const res = await fetch("/api/admin/bulk-insert", {
-          method: "POST",
-          body: JSON.stringify({ table: "shorts", data: formattedData }),
+        results.data.forEach(row => {
+          if (row.symbol && String(row.symbol).trim() !== "") {
+            const symbol = String(row.symbol).trim().toUpperCase();
+            
+            // If symbol repeats in CSV, the last one seen will overwrite previous ones
+            uniqueDataMap.set(symbol, {
+              company: row.company || "",
+              symbol: symbol,
+              market: row.market || "",
+              current_short: cleanNum(row.current_short),
+              previous_short: cleanNum(row.previous_short),
+              outstanding: cleanNum(row.outstanding),
+              float: cleanNum(row.float),
+              av_vol: cleanNum(row.av_vol),
+              date: row.date ? String(row.date).trim() : ""
+            });
+          }
         });
 
-        if (res.ok) { alert("Cargado"); loadData(true); }
-        setLoading(false);
-        e.target.value = "";
+        const formattedData = Array.from(uniqueDataMap.values());
+
+        try {
+          const res = await fetch("/api/admin/bulk-insert", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ table: "shorts", data: formattedData }),
+          });
+
+          if (res.ok) { 
+            alert(`Success: ${formattedData.length} unique records processed.`); 
+            loadData(true); 
+          } else {
+            const err = await res.json();
+            alert("Error: " + (err.error || "Upload failed"));
+          }
+        } catch (error) {
+          alert("Connection error during upload");
+        } finally {
+          setLoading(false);
+          e.target.value = "";
+        }
       }
     });
   };
 
-  // 3. ELIMINAR
+  // 3. DELETE RECORD
   const handleDelete = async (id) => {
-    if (!confirm("¿Eliminar?")) return;
+    if (!confirm("Delete this record?")) return;
     const res = await fetch("/api/admin/delete", {
       method: "DELETE",
       body: JSON.stringify({ table: "shorts", id })
@@ -77,19 +100,20 @@ export default function AdminShortsPage() {
 
   return (
     <div style={{ padding: '20px' }}>
-      <h1 style={{ color: COLORS.primary }}>Admin Shorts</h1>
+      <h1 style={{ color: COLORS.primary }}>Admin: Shorts Management</h1>
 
-      <div style={{ marginBottom: '20px', padding: '15px', background: '#f4f4f4', borderRadius: '8px' }}>
+      <div style={toolBarStyle}>
+        <label style={labelStyle}>Import CSV File (Auto-cleans duplicates)</label>
         <input type="file" accept=".csv" onChange={handleCSVUpload} disabled={loading} />
-        {loading && <span> Cargando...</span>}
+        {loading && <span style={{ marginLeft: '10px', color: COLORS.primary }}>Processing...</span>}
       </div>
 
-      <div style={{ overflowX: 'auto' }}>
+      <div style={tableWrapperStyle}>
         <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '1200px' }}>
           <thead style={{ background: COLORS.primary, color: 'white' }}>
             <tr>
               {["Company", "Symbol", "Market", "Current", "Previous", "Outstanding", "Float", "Avg Vol", "Date", "Action"].map(h => (
-                <th key={h} style={{ padding: '10px', textAlign: 'left' }}>{h}</th>
+                <th key={h} style={thStyle}>{h}</th>
               ))}
             </tr>
           </thead>
@@ -106,7 +130,7 @@ export default function AdminShortsPage() {
                 <td style={tdStyle}>{item.av_vol?.toLocaleString()}</td>
                 <td style={tdStyle}>{item.date ? new Date(item.date).toLocaleDateString() : '-'}</td>
                 <td style={tdStyle}>
-                  <button onClick={() => handleDelete(item.id)} style={{ background: '#e74c3c', color: 'white', border: 'none', padding: '5px', cursor: 'pointer' }}>🗑️</button>
+                  <button onClick={() => handleDelete(item.id)} style={deleteBtnStyle}>🗑️</button>
                 </td>
               </tr>
             ))}
@@ -114,10 +138,18 @@ export default function AdminShortsPage() {
         </table>
       </div>
 
-      {hasMore && <button onClick={() => loadData(false)} style={btnMore}>Cargar más</button>}
+      {hasMore && !loading && (
+        <button onClick={() => loadData(false)} style={loadMoreStyle}>Load More</button>
+      )}
     </div>
   );
 }
 
+// STYLES
+const toolBarStyle = { marginBottom: '20px', padding: '15px', background: '#f4f4f4', borderRadius: '8px' };
+const labelStyle = { display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '5px' };
+const thStyle = { padding: '10px', textAlign: 'left', fontSize: '12px', textTransform: 'uppercase' };
 const tdStyle = { padding: '10px', fontSize: '13px' };
-const btnMore = { display: 'block', margin: '20px auto', padding: '10px', background: COLORS.primary, color: 'white', border: 'none', cursor: 'pointer' };
+const deleteBtnStyle = { background: '#e74c3c', color: 'white', border: 'none', padding: '5px 8px', cursor: 'pointer', borderRadius: '4px' };
+const loadMoreStyle = { display: 'block', margin: '20px auto', padding: '10px 20px', background: COLORS.primary, color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' };
+const tableWrapperStyle = { overflowX: 'auto', background: 'white', borderRadius: '8px', border: '1px solid #eee' };
