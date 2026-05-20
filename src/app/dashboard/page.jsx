@@ -15,7 +15,7 @@ export default function DashboardHome() {
         setUser(userData);
       });
 
-    // 2. Cargar últimas ventas (opcional para dar vida al dashboard)
+    // 2. Cargar últimas ventas (dinámico)
     fetch('/api/admin/read?table=vsales')
       .then(res => res.json())
       .then(data => {
@@ -26,85 +26,110 @@ export default function DashboardHome() {
   }, []);
 
   return (
-    <div style={{ maxWidth: '1000px', margin: '0 auto', fontFamily: 'Arial, sans-serif' }}>
+    <div className="space-y-8 max-w-5xl mx-auto animate-fade-in">
       
-      {/* HEADER DE BIENVENIDA */}
-      <header style={welcomeCardStyle}>
-        <h1 style={{ margin: 0, fontSize: '2.5rem' }}>
-          ¡Bienvenido de nuevo, {user?.name || 'Usuario'}! 👋
+      {/* HEADER DE BIENVENIDA PREMIUM (Estilo Tarjeta de Élite, sin imagen) */}
+      <header className="bg-gradient-to-br from-slate-900 to-slate-950 border border-slate-800/80 rounded-2xl p-10 relative overflow-hidden shadow-2xl">
+        <div className="absolute top-0 right-0 p-8 text-7xl opacity-10 pointer-events-none select-none font-black italic uppercase tracking-tighter">
+          AEGIS
+        </div>
+        <h1 className="text-3xl md:text-4xl font-[900] tracking-tighter text-white uppercase italic">
+          ¡Bienvenido de nuevo, <span className="text-blue-500 not-italic">{user?.name || 'Usuario'}</span>! 👋
         </h1>
-        <p style={{ fontSize: '1.1rem', opacity: 0.9, marginTop: '10px' }}>
-          Este es tu resumen general de Shipping SaaS. Explora las métricas y novedades del mercado.
+        <p className="mt-3 text-sm text-slate-400 font-bold tracking-tight max-w-2xl leading-relaxed">
+          Este es tu resumen general en la terminal Aegis Analytics. Explora los conjuntos de datos, los cambios algorítmicos de valoración y las últimas novedades del mercado marítimo global.
         </p>
       </header>
 
-      {/* ACCESOS RÁPIDOS */}
-      <h3 style={{ marginBottom: '20px', color: '#333' }}>🚀 Acceso Rápido</h3>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '40px' }}>
-        <QuickLink href="/dashboard/companies" title="Compañías" desc="Directorio de empresas" icon="🏢" color="#1a73e8" />
-        <QuickLink href="/dashboard/vvalues" title="V-Values" desc="Valores de mercado" icon="📊" color="#34a853" />
-        <QuickLink href="/dashboard/vsales" title="V-Sales" desc="Ventas recientes" icon="🚢" color="#fbbc04" />
-      </div>
-
-      {/* ÚLTIMAS VENTAS (DINÁMICO) */}
-      <h3 style={{ marginBottom: '20px', color: '#333' }}>⚓ Últimas Ventas del Mercado</h3>
-      <div style={{ background: 'white', borderRadius: '15px', border: '1px solid #eee', overflow: 'hidden', marginBottom: '40px' }}>
-        {recentSales.length > 0 ? (
-          recentSales.map((sale) => (
-            <div key={sale.id} style={{ padding: '15px 20px', borderBottom: '1px solid #f5f5f5', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <span style={{ fontWeight: 'bold', color: '#1a73e8' }}>{sale.name}</span>
-                <span style={{ color: '#777', fontSize: '13px', marginLeft: '10px' }}>({sale.type})</span>
-              </div>
-              <div style={{ fontWeight: 'bold', color: '#188038' }}>${sale.price}M</div>
-            </div>
-          ))
-        ) : (
-          <p style={{ padding: '20px', color: '#999' }}>Cargando últimas transacciones...</p>
-        )}
-      </div>
-
-      {/* FOOTER / ESTADO */}
-      <div style={{ background: 'white', padding: '25px', borderRadius: '15px', border: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <span style={{ color: '#666', fontSize: '14px' }}>Estado de cuenta: </span>
-          <span style={{ fontWeight: 'bold' }}>{user?.super ? 'Administrador' : 'Suscripción Premium'} ✅</span>
+      {/* SECCIÓN: ACCESOS RÁPIDOS */}
+      <div>
+        <h3 className="text-xs font-black tracking-[0.2em] text-slate-500 uppercase mb-4">
+          🚀 Módulos del Sistema
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <QuickLink href="/dashboard/companies" title="Compañías" desc="Directorio e historial de empresas." icon="🏢" borderClass="border-t-blue-500" />
+          <QuickLink href="/dashboard/vvalues" title="V-Values" desc="Modelos dinámicos de valoración." icon="📊" borderClass="border-t-emerald-500" />
+          <QuickLink href="/dashboard/vsales" title="V-Sales" desc="Transacciones y ventas del mercado." icon="🚢" borderClass="border-t-amber-500" />
         </div>
-        <Link href="/dashboard/profile" style={{ color: '#1a73e8', fontWeight: 'bold', textDecoration: 'none', fontSize: '14px' }}>
-          Gestionar Perfil →
-        </Link>
       </div>
+
+      {/* SECCIÓN: ÚLTIMAS VENTAS (ESTILO FEED FINANCIERO BLOOMBERG) */}
+      <div>
+        <h3 className="text-xs font-black tracking-[0.2em] text-slate-500 uppercase mb-4">
+          ⚓ Últimas Ventas del Mercado
+        </h3>
+        <div className="bg-slate-900/40 border border-slate-800/60 rounded-2xl overflow-hidden backdrop-blur-md">
+          {recentSales.length > 0 ? (
+            <div className="divide-y divide-slate-800/60">
+              {recentSales.map((sale) => (
+                <div 
+                  key={sale.id} 
+                  className="p-4 px-6 flex justify-between items-center hover:bg-slate-900/60 transition-colors duration-150 group"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-slate-500 font-bold group-hover:text-blue-400 transition-colors">➔</span>
+                    <div>
+                      <span className="font-black text-sm text-white tracking-tight">{sale.name}</span>
+                      <span className="text-[11px] text-slate-500 font-bold tracking-wider uppercase ml-2">
+                        {sale.type}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="font-mono text-xs font-black text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-md border border-emerald-500/10">
+                    ${sale.price}M
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-6 text-center">
+              <span className="inline-block animate-spin rounded-full h-4 w-4 border border-slate-500 border-t-transparent mr-2 align-middle" />
+              <span className="text-xs text-slate-500 font-mono tracking-wider uppercase">
+                Sincronizando últimas transacciones de la flota...
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* FOOTER / PANEL DE ESTADO */}
+      <footer className="bg-slate-900/30 border border-slate-800/50 rounded-2xl p-5 flex flex-col sm:flex-row gap-4 justify-between items-center text-xs">
+        <div className="flex items-center gap-2.5 font-bold text-slate-400 tracking-tight">
+          <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span>Estado de la cuenta:</span>
+          <span className="text-white font-black bg-slate-800/60 px-2 py-0.5 rounded border border-slate-800/40">
+            {user?.super ? 'Administrador' : 'Suscripción Premium'} ✅
+          </span>
+        </div>
+        <Link 
+          href="/dashboard/profile" 
+          className="text-blue-400 font-black tracking-wider uppercase text-[11px] hover:text-white transition-colors flex items-center gap-1 group"
+        >
+          Gestionar Perfil <span className="transform group-hover:translate-x-1 transition-transform">→</span>
+        </Link>
+      </footer>
+
     </div>
   );
 }
 
-// Sub-componente para los cuadros de acceso
-function QuickLink({ href, title, desc, icon, color }) {
+// Sub-componente optimizado para las tarjetas de acceso rápido
+function QuickLink({ href, title, desc, icon, borderClass }) {
   return (
-    <Link href={href} style={{ textDecoration: 'none', color: 'inherit' }}>
-      <div style={{ 
-        background: 'white', 
-        padding: '25px', 
-        borderRadius: '15px', 
-        border: '1px solid #eee', 
-        borderTop: `5px solid ${color}`, 
-        boxShadow: '0 4px 6px rgba(0,0,0,0.02)',
-        transition: 'all 0.2s'
-      }}>
-        <div style={{ fontSize: '30px', marginBottom: '10px' }}>{icon}</div>
-        <h4 style={{ margin: '0 0 5px 0' }}>{title}</h4>
-        <p style={{ margin: 0, fontSize: '13px', color: '#777' }}>{desc}</p>
+    <Link href={href} className="group block h-full">
+      <div className={`bg-slate-900/50 hover:bg-slate-900 border border-slate-800/80 hover:border-slate-700/80 p-6 rounded-2xl transition-all duration-200 h-full flex flex-col justify-between border-t-4 ${borderClass}`}>
+        <div>
+          <div className="text-2xl mb-3 p-2 bg-slate-950/60 w-fit rounded-xl border border-slate-800/60 group-hover:bg-slate-950 transition-colors">
+            {icon}
+          </div>
+          <h4 className="text-white font-black text-base tracking-tight group-hover:text-blue-400 transition-colors">
+            {title}
+          </h4>
+          <p className="text-xs text-slate-400 font-medium mt-1 leading-relaxed">
+            {desc}
+          </p>
+        </div>
       </div>
     </Link>
   );
 }
-
-const welcomeCardStyle = {
-  background: 'linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%)',
-  color: 'white',
-  padding: '50px 40px',
-  borderRadius: '20px',
-  marginBottom: '40px',
-  boxShadow: '0 10px 20px rgba(26, 115, 232, 0.2)'
-};
-
