@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
-import { COLORS } from "@/lib/ui-constants";
 
 export default function CompaniesDashboard() {
   const [data, setData] = useState([]);
@@ -9,7 +8,7 @@ export default function CompaniesDashboard() {
 
   const sectors = ["Tankers", "DB"];
 
-  // 1. CARGA DE DATOS
+  // 1. DATA LOADING LOGIC (Preserving exact dependencies)
   const loadCompanies = useCallback(async () => {
     setLoading(true);
     try {
@@ -17,7 +16,7 @@ export default function CompaniesDashboard() {
       const allData = await res.json();
 
       if (Array.isArray(allData)) {
-        // Filtramos por sector y ordenamos por ID ascendente
+        // Filter by sector and sort by ID ascending
         const filtered = allData
           .filter(item => item.sector === activeSector)
           .sort((a, b) => a.id - b.id);
@@ -34,10 +33,9 @@ export default function CompaniesDashboard() {
     loadCompanies();
   }, [loadCompanies]);
 
-  // 2. FUNCIÓN DE DESCARGA SEGURA (BLOB)
+  // 2. SECURE BINARY DOWNLOAD FUNCTION (BLOB)
   const handleDownload = async (filename) => {
     try {
-      // Usamos encodeURIComponent por seguridad con caracteres especiales
       const res = await fetch(`/api/download/${encodeURIComponent(filename)}`);
       
       if (!res.ok) {
@@ -47,18 +45,15 @@ export default function CompaniesDashboard() {
         return;
       }
 
-      // Convertimos la respuesta en un objeto binario (Blob)
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       
-      // Creamos un enlace temporal y simulamos el click
       const a = document.createElement('a');
       a.href = url;
       a.download = filename; 
       document.body.appendChild(a);
       a.click();
       
-      // Limpiamos la memoria
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
       
@@ -69,145 +64,112 @@ export default function CompaniesDashboard() {
   };
 
   return (
-    <div style={{ padding: '20px', maxWidth: '100vw' }}>
-      <header style={{ marginBottom: '20px' }}>
-        <h1 style={{ color: COLORS.primary, fontSize: '24px', marginBottom: '5px' }}>
+    <div className="space-y-6 max-w-5xl mx-auto animate-fade-in">
+      
+      {/* HEADER SECTION */}
+      <header className="border-b border-slate-200 dark:border-slate-800/60 pb-5">
+        <h1 className="text-2xl font-[900] tracking-tighter text-slate-900 dark:text-white uppercase italic">
           Public Maritime Companies
         </h1>
-        <p style={{ color: '#666', fontSize: '14px' }}>
-          Market coverage and strategic equity reports.
+        <p className="mt-1.5 text-xs font-bold text-slate-400 dark:text-slate-500 tracking-tight">
+          Comprehensive market coverage, institutional metrics, and strategic equity reports.
         </p>
       </header>
 
-      {/* SELECTOR DE SECTOR */}
-      <div style={tabsContainer}>
+      {/* SECTOR TABS (High density selector) */}
+      <div className="flex gap-2 p-1 bg-slate-200/60 dark:bg-slate-900/40 w-fit rounded-xl border border-slate-200 dark:border-slate-800/40 backdrop-blur-md">
         {sectors.map((sector) => (
           <button
             key={sector}
             onClick={() => setActiveSector(sector)}
-            style={{
-              ...tabButton,
-              backgroundColor: activeSector === sector ? COLORS.primary : "white",
-              color: activeSector === sector ? "white" : "#666",
-              border: `1px solid ${activeSector === sector ? COLORS.primary : "#ddd"}`,
-            }}
+            className={`px-6 py-2 rounded-lg text-xs font-black tracking-wider uppercase transition-all duration-150 ${
+              activeSector === sector
+                ? "bg-white dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-slate-200/80 dark:border-blue-500/30 shadow-sm"
+                : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white border border-transparent"
+            }`}
           >
             {sector === "DB" ? "Dry Bulk" : sector}
           </button>
         ))}
       </div>
 
-      {/* TABLA DE COMPAÑÍAS */}
-      <div style={tableWrapperStyle}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '800px' }}>
-          <thead style={{ background: COLORS.primary, color: 'white' }}>
-            <tr>
-              <th style={thStyle}>Company Name</th>
-              <th style={thStyle}>Ticker / Symbol</th>
-              <th style={{ ...thStyle, textAlign: 'center' }}>Equity Report</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.length > 0 ? (
-              data.map((company) => (
-                <tr key={company.id} style={trStyle}>
-                  <td style={{ ...tdStyle, fontWeight: 'bold', color: '#333' }}>
-                    {company.name}
-                  </td>
-                  <td style={{ ...tdStyle, color: COLORS.primary, fontWeight: 'bold' }}>
-                    {company.ticket_1 || '-'}
-                  </td>
-                  <td style={{ ...tdStyle, textAlign: 'center' }}>
-                    {company.excel_path ? (
-                      <button 
-                        onClick={() => handleDownload(company.excel_path)}
-                        style={downloadBtnActive}
-                      >
-                        Download Excel
-                      </button>
+      {/* CORE DATA TABLE (Bloomberg terminal high density design) */}
+      <div className="overflow-hidden bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/60 rounded-2xl shadow-sm dark:shadow-2xl backdrop-blur-md transition-colors duration-200">
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse text-left min-w-[700px]">
+            <thead>
+              <tr className="bg-slate-50 dark:bg-slate-950/40 border-b border-slate-200 dark:border-slate-800/60 text-[10px] font-black tracking-[0.15em] text-slate-400 dark:text-slate-500 uppercase">
+                <th className="py-4 px-6">Company Name</th>
+                <th className="py-4 px-6">Ticker / Symbol</th>
+                <th className="py-4 px-6 text-center">Equity Report</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/40 text-sm font-medium">
+              {data.length > 0 ? (
+                data.map((company) => (
+                  <tr 
+                    key={company.id} 
+                    className="hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors duration-150 group"
+                  >
+                    {/* COMPANY NAME */}
+                    <td className="py-3.5 px-6 font-black text-slate-800 dark:text-white tracking-tight">
+                      {company.name}
+                    </td>
+                    
+                    {/* TICKER BADGE */}
+                    <td className="py-3.5 px-6 font-mono text-xs">
+                      <span className="text-blue-600 dark:text-blue-400 bg-blue-500/5 dark:bg-blue-500/10 border border-blue-500/10 dark:border-blue-500/20 px-2.5 py-1 rounded-md font-bold tracking-wide">
+                        {company.ticket_1 || '-'}
+                      </span>
+                    </td>
+                    
+                    {/* DOWNLOAD/COMING SOON BADGE */}
+                    <td className="py-3.5 px-6 text-center">
+                      {company.excel_path ? (
+                        <button 
+                          onClick={() => handleDownload(company.excel_path)}
+                          className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-black tracking-wider uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 hover:border-emerald-500/40 transition-all cursor-pointer"
+                        >
+                          📥 Download Excel
+                        </button>
+                      ) : (
+                        <span className="inline-block px-3 py-1 rounded-md text-[10px] font-black tracking-widest uppercase bg-slate-100 dark:bg-slate-950/60 text-slate-400 dark:text-slate-600 border border-slate-200 dark:border-slate-800/40">
+                          Coming Soon
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="3" className="py-16 text-center">
+                    {loading ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <span className="inline-block animate-spin rounded-full h-5 w-5 border-2 border-slate-400 dark:border-slate-600 border-t-transparent" />
+                        <span className="text-xs text-slate-400 dark:text-slate-500 font-mono tracking-wider uppercase">
+                          Querying database directory...
+                        </span>
+                      </div>
                     ) : (
-                      <span style={comingSoonBadge}>
-                        Coming Soon
+                      <span className="text-xs text-slate-400 dark:text-slate-500 font-mono tracking-wider uppercase">
+                        No records found for {activeSector === "DB" ? "Dry Bulk" : activeSector}.
                       </span>
                     )}
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="3" style={{ padding: '60px', textAlign: 'center', color: '#999' }}>
-                  {loading ? "Loading directory..." : `No records found for ${activeSector === "DB" ? "Dry Bulk" : activeSector}.`}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <footer style={{ marginTop: '20px', fontSize: '12px', color: '#999' }}>
-        * Reports are available for active subscribers. Sorted by Database ID.
+      {/* FOOTER METRICS METADATA */}
+      <footer className="text-[10px] font-mono text-slate-400 dark:text-slate-600 tracking-wider uppercase flex items-center gap-2">
+        <span>* Analytical reports are restricted to active institutional subscribers.</span>
+        <span className="hidden sm:inline">//</span>
+        <span className="hidden sm:inline">Indexation: Database ID Order</span>
       </footer>
+
     </div>
   );
 }
-
-// --- ESTILOS ---
-const tabsContainer = { display: 'flex', gap: '10px', marginBottom: '20px' };
-const tabButton = { 
-  padding: '10px 25px', 
-  borderRadius: '25px', 
-  cursor: 'pointer', 
-  fontSize: '14px', 
-  fontWeight: 'bold', 
-  transition: 'all 0.2s ease' 
-};
-
-const tableWrapperStyle = { 
-  overflowX: 'auto', 
-  background: 'white', 
-  borderRadius: '10px', 
-  boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
-  border: '1px solid #eee' 
-};
-
-const thStyle = { 
-  padding: '18px 20px', 
-  textAlign: 'left', 
-  fontSize: '12px', 
-  textTransform: 'uppercase', 
-  letterSpacing: '1px' 
-};
-
-const tdStyle = { 
-  padding: '16px 20px', 
-  fontSize: '14px', 
-  color: '#555',
-  borderBottom: '1px solid #f2f2f2'
-};
-
-const trStyle = { transition: 'background 0.2s' };
-
-const comingSoonBadge = {
-  padding: '6px 12px',
-  borderRadius: '4px',
-  fontSize: '11px',
-  fontWeight: 'bold',
-  textTransform: 'uppercase',
-  backgroundColor: '#f5f5f5',
-  color: '#999',
-  border: '1px solid #ddd',
-  display: 'inline-block'
-};
-
-const downloadBtnActive = {
-  padding: '8px 16px',
-  borderRadius: '4px',
-  fontSize: '12px',
-  fontWeight: 'bold',
-  backgroundColor: COLORS.primary,
-  color: 'white',
-  border: 'none',
-  cursor: 'pointer',
-  transition: '0.2s',
-  display: 'inline-block'
-};

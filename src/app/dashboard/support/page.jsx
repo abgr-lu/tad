@@ -14,50 +14,77 @@ export default function SupportPage() {
     });
 
     if (res.ok) {
-      alert("✅ Mensaje enviado. Te responderemos pronto.");
+      alert("✅ Ticket submitted successfully. Our analyst desk will review it shortly.");
       setTicket({ subject: '', message: '' });
     }
     setSending(false);
   };
 
   return (
-    <div style={{ maxWidth: '600px', margin: '0 auto', background: 'white', padding: '40px', borderRadius: '15px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
-      <h1>💬 Centro de Soporte</h1>
-      <p style={{ color: '#666', marginBottom: '30px' }}>¿Tienes alguna duda o problema técnico? Cuéntanos y te ayudaremos.</p>
+    <div className="space-y-6 max-w-xl mx-auto animate-fade-in pb-12">
+      
+      {/* HEADER SECTION */}
+      <header className="border-b border-slate-200 dark:border-slate-800/60 pb-5">
+        <h1 className="text-2xl font-[900] tracking-tighter text-slate-900 dark:text-white uppercase italic">
+          Help & Support Desk
+        </h1>
+        <p className="mt-1.5 text-xs font-bold text-slate-400 dark:text-slate-500 tracking-tight">
+          Encountering technical discrepancies or data gaps? Submit an official operational inquiry.
+        </p>
+      </header>
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        <div>
-          <label style={{ fontWeight: 'bold' }}>Asunto</label>
-          <input 
-            type="text" 
-            required 
-            placeholder="Ej: Problema con los datos de V-Sales"
-            value={ticket.subject}
-            onChange={e => setTicket({...ticket, subject: e.target.value})}
-            style={inputStyle}
-          />
-        </div>
-        <div>
-          <label style={{ fontWeight: 'bold' }}>Mensaje</label>
-          <textarea 
-            required 
-            placeholder="Escribe aquí tu consulta detallada..."
-            value={ticket.message}
-            onChange={e => setTicket({...ticket, message: e.target.value})}
-            style={{ ...inputStyle, height: '150px', resize: 'none' }}
-          />
-        </div>
-        <button 
-          type="submit" 
-          disabled={sending}
-          style={{ ...btnStyle, opacity: sending ? 0.7 : 1 }}
-        >
-          {sending ? 'Enviando...' : 'Enviar Consulta'}
-        </button>
-      </form>
+      {/* TICKET DISPATCH CARD */}
+      <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/60 rounded-2xl p-8 shadow-sm backdrop-blur-md transition-colors">
+        <form onSubmit={handleSubmit} className="space-y-5">
+          
+          {/* SUBJECT INPUT */}
+          <div>
+            <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1.5">
+              Inquiry Subject
+            </label>
+            <input 
+              type="text" 
+              required 
+              placeholder="e.g., Data sync discrepancy within V-Sales ledger"
+              value={ticket.subject}
+              onChange={e => setTicket({...ticket, subject: e.target.value})}
+              className="w-full bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800/60 text-slate-900 dark:text-white rounded-xl px-4 py-2.5 text-xs font-bold tracking-tight placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
+            />
+          </div>
+          
+          {/* MESSAGE TEXTAREA */}
+          <div>
+            <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1.5">
+              Detailed Context / Message
+            </label>
+            <textarea 
+              required 
+              placeholder="Provide a comprehensive breakdown of your query or system issue..."
+              value={ticket.message}
+              onChange={e => setTicket({...ticket, message: e.target.value})}
+              className="w-full bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800/60 text-slate-900 dark:text-white rounded-xl px-4 py-2.5 text-xs font-bold tracking-tight placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors h-36 resize-none"
+            />
+          </div>
+
+          {/* DISPATCH ACTION BUTTON */}
+          <button 
+            type="submit" 
+            disabled={sending}
+            className="w-full mt-2 py-3 bg-blue-600 dark:bg-blue-500/10 hover:bg-blue-700 dark:hover:bg-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed text-white dark:text-blue-400 border border-transparent dark:border-blue-500/20 text-xs font-black tracking-widest uppercase rounded-xl transition-all shadow-sm cursor-pointer"
+          >
+            {sending ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="inline-block animate-spin rounded-full h-3 w-3 border border-current border-t-transparent" />
+                Dispatching Ticket...
+              </span>
+            ) : (
+              'Submit Operational Inquiry'
+            )}
+          </button>
+
+        </form>
+      </div>
+
     </div>
   );
 }
-
-const inputStyle = { width: '100%', padding: '12px', marginTop: '8px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '15px', boxSizing: 'border-box' };
-const btnStyle = { padding: '14px', background: '#1a73e8', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px' };

@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
-import { COLORS } from "@/lib/ui-constants";
 
 export default function VValuesDashboard() {
   const [data, setData] = useState([]);
@@ -8,9 +7,9 @@ export default function VValuesDashboard() {
   const [latestInfo, setLatestInfo] = useState({ year: null, week: null });
   const [activeSector, setActiveSector] = useState("Tankers");
 
-  // Adjusted to match your database values exactly
   const sectors = ["Tankers", "DB"];
 
+  // 1. DATA LOADING LOGIC (Preserving exact dual-fetch sequence)
   const loadValues = useCallback(async () => {
     setLoading(true);
     try {
@@ -26,7 +25,7 @@ export default function VValuesDashboard() {
         const resData = await fetch(`/api/admin/read?table=vv&limit=200`);
         const allData = await resData.json();
 
-        // Step 3: Filter by week, year, and the active sector (Tankers or DB)
+        // Step 3: Filter by week, year, and the active sector
         const filtered = allData
           .filter(item => 
             item.year === year && 
@@ -49,84 +48,114 @@ export default function VValuesDashboard() {
   }, [loadValues]);
 
   return (
-    <div style={{ padding: '20px', maxWidth: '100vw' }}>
-      <header style={{ marginBottom: '20px' }}>
-        <h1 style={{ color: COLORS.primary, fontSize: '24px', marginBottom: '5px' }}>
-          Current Vessel Values
-        </h1>
-        {latestInfo.year && (
-          <p style={{ color: '#666', fontSize: '14px' }}>
-            Market data for <strong>Week {latestInfo.week}, {latestInfo.year}</strong>
+    <div className="space-y-6 max-w-5xl mx-auto animate-fade-in">
+      
+      {/* HEADER SECTION */}
+      <header className="border-b border-slate-200 dark:border-slate-800/60 pb-5 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-[900] tracking-tighter text-slate-900 dark:text-white uppercase italic">
+            Current Vessel Valuations
+          </h1>
+          <p className="mt-1.5 text-xs font-bold text-slate-400 dark:text-slate-500 tracking-tight">
+            Automated algorithm pricing matrices mapped across asset age horizons.
           </p>
+        </div>
+        
+        {/* TIMESTAMPS / METADATA BADGE */}
+        {latestInfo.year && (
+          <div className="bg-blue-500/5 dark:bg-blue-500/10 border border-blue-500/20 px-3 py-1.5 rounded-xl text-xs font-bold text-blue-600 dark:text-blue-400 w-fit shrink-0 font-mono tracking-tight shadow-sm shadow-blue-500/5">
+            DATA HORIZON: Week {latestInfo.week}, {latestInfo.year}
+          </div>
         )}
       </header>
 
-      {/* SECTOR SELECTOR */}
-      <div style={tabsContainer}>
+      {/* SECTOR TABS SELECTOR */}
+      <div className="flex gap-2 p-1 bg-slate-200/60 dark:bg-slate-900/40 w-fit rounded-xl border border-slate-200 dark:border-slate-800/40 backdrop-blur-md">
         {sectors.map((sector) => (
           <button
             key={sector}
             onClick={() => setActiveSector(sector)}
-            style={{
-              ...tabButton,
-              backgroundColor: activeSector === sector ? COLORS.primary : "white",
-              color: activeSector === sector ? "white" : "#666",
-              border: `1px solid ${activeSector === sector ? COLORS.primary : "#ddd"}`,
-            }}
+            className={`px-6 py-2 rounded-lg text-xs font-black tracking-wider uppercase transition-all duration-150 ${
+              activeSector === sector
+                ? "bg-white dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-slate-200/80 dark:border-blue-500/30 shadow-sm"
+                : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white border border-transparent"
+            }`}
           >
             {sector === "DB" ? "Dry Bulk" : sector}
           </button>
         ))}
       </div>
 
-      <div style={tableWrapperStyle}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '1000px' }}>
-          <thead style={{ background: COLORS.primary, color: 'white' }}>
-            <tr>
-              <th style={thStyle}>Vessel Type</th>
-              <th style={thStyle}>New Building</th>
-              <th style={thStyle}>5 Years</th>
-              <th style={thStyle}>10 Years</th>
-              <th style={thStyle}>15 Years</th>
-              <th style={thStyle}>20 Years</th>
-              <th style={thStyle}>Scrap Value</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.length > 0 ? (
-              data.map((item) => (
-                <tr key={item.id} style={trStyle}>
-                  <td style={{ ...tdStyle, fontWeight: 'bold', color: '#333' }}>{item.type}</td>
-                  <td style={tdStyle}>${item.nb}M</td>
-                  <td style={tdStyle}>${item["5"]}M</td>
-                  <td style={tdStyle}>${item["10"]}M</td>
-                  <td style={tdStyle}>${item["15"]}M</td>
-                  <td style={tdStyle}>${item["20"]}M</td>
-                  <td style={tdStyle}>${item.scrap}M</td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="7" style={{ padding: '40px', textAlign: 'center', color: '#999' }}>
-                  {loading ? "Loading..." : "No data found for this sector in the current week."}
-                </td>
+      {/* HIGH-DENSITY TERMINAL GRID TABLE */}
+      <div className="overflow-hidden bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/60 rounded-2xl shadow-sm dark:shadow-2xl backdrop-blur-md transition-colors duration-200">
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse text-left min-w-[900px]">
+            <thead>
+              <tr className="bg-slate-50 dark:bg-slate-950/40 border-b border-slate-200 dark:border-slate-800/60 text-[10px] font-black tracking-[0.15em] text-slate-400 dark:text-slate-500 uppercase">
+                <th className="py-4 px-6">Vessel Type</th>
+                <th className="py-4 px-4">New Building</th>
+                <th className="py-4 px-4">5 Years</th>
+                <th className="py-4 px-4">10 Years</th>
+                <th className="py-4 px-4">15 Years</th>
+                <th className="py-4 px-4">20 Years</th>
+                <th className="py-4 px-4">Scrap Value</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/40 text-sm font-medium font-mono">
+              {data.length > 0 ? (
+                data.map((item) => (
+                  <tr 
+                    key={item.id} 
+                    className="hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors duration-150 text-slate-700 dark:text-slate-300"
+                  >
+                    {/* VESSEL TYPE (Non-mono text font for clean identity layout) */}
+                    <td className="py-3.5 px-6 font-sans font-black text-slate-800 dark:text-white tracking-tight">
+                      {item.type}
+                    </td>
+                    
+                    {/* VALUATION HORIZONS */}
+                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">${item.nb}M</td>
+                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">${item["5"]}M</td>
+                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">${item["10"]}M</td>
+                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">${item["15"]}M</td>
+                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">${item["20"]}M</td>
+                    
+                    {/* SCRAP VALUE (Highlighted subtly with a soft slate accent badge) */}
+                    <td className="py-3.5 px-4 font-black text-slate-500 dark:text-slate-400">
+                      ${item.scrap}M
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="7" className="py-16 text-center font-sans">
+                    {loading ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <span className="inline-block animate-spin rounded-full h-5 w-5 border-2 border-slate-400 dark:border-slate-600 border-t-transparent" />
+                        <span className="text-xs text-slate-400 dark:text-slate-500 font-mono tracking-wider uppercase">
+                          Sincronizando matrix algorithm feeds...
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-slate-400 dark:text-slate-500 font-mono tracking-wider uppercase">
+                        No data discovered for this asset segment within the current epoch.
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <footer style={{ marginTop: '20px', fontSize: '12px', color: '#999' }}>
-        * Values in Million USD ($M). Last updated: Week {latestInfo.week}/{latestInfo.year}.
+      {/* FOOTER LEGEND */}
+      <footer className="text-[10px] font-mono text-slate-400 dark:text-slate-600 tracking-wider uppercase flex items-center gap-2">
+        <span>* Asset valuation matrices are denominated in Million USD ($M).</span>
+        <span className="hidden sm:inline">//</span>
+        <span className="hidden sm:inline">Temporal Index: Week {latestInfo.week || '--'}/{latestInfo.year || '----'}</span>
       </footer>
+
     </div>
   );
 }
-
-// STYLES
-const tabsContainer = { display: 'flex', gap: '10px', marginBottom: '20px' };
-const tabButton = { padding: '10px 25px', borderRadius: '25px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold', transition: '0.2s' };
-const tableWrapperStyle = { overflowX: 'auto', background: 'white', borderRadius: '10px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', border: '1px solid #eee' };
-const thStyle = { padding: '15px 12px', textAlign: 'left', fontSize: '12px', textTransform: 'uppercase' };
-const tdStyle = { padding: '14px 12px', fontSize: '13px', color: '#555', borderBottom: '1px solid #f9f9f9' };
-const trStyle = { borderBottom: '1px solid #eee' };

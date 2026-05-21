@@ -3,7 +3,7 @@ import './globals.css';
 
 const inter = Inter({ 
   subsets: ['latin'],
-  weight: ['400', '700', '900'], // Peso 900 es clave para el título
+  weight: ['400', '700', '900'],
 });
 
 export const metadata = {
@@ -13,8 +13,8 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="es">
-      <body className={`${inter.className} bg-black transition-colors duration-300`}>
+    <html lang="en"> {/* Cambiado a inglés */}
+      <body className={`${inter.className} bg-slate-50 dark:bg-black text-slate-900 dark:text-slate-100 transition-colors duration-300`}>
         {children}
       </body>
     </html>

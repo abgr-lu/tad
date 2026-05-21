@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class',
   content: [
     // Rutas para cuando usas la carpeta src/
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",

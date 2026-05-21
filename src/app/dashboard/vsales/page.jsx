@@ -1,6 +1,5 @@
 "use client";
-import { useEffect, useState, useCallback } from "react";
-import { COLORS } from "@/lib/ui-constants";
+import { useEffect, useState, useCallback, useRef } from "react";
 
 export default function VSalesDashboard() {
   const [data, setData] = useState([]);
@@ -8,127 +7,197 @@ export default function VSalesDashboard() {
   const [search, setSearch] = useState("");
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(true);
-  const [activeSector, setActiveSector] = useState("Tankers"); // Default sector
+  const [activeSector, setActiveSector] = useState("Tankers");
 
+  const offsetRef = useRef(0);
   const sectors = ["Tankers", "DB"];
-  const LIMIT = 50;
+  const LIMIT = 10; // Cambia a 50 en producción una vez veas que funciona impecable
 
-  // 1. DATA LOAD WITH SECTOR AND GLOBAL FILTER
-  const loadData = useCallback(async (isNewSearch = false) => {
+  // 1. DATA LOAD LOGIC WITH STABLE MEMORY RECURSION
+  const loadData = useCallback(async (isNewSearch = false, currentAccumulated = []) => {
     setLoading(true);
-    const currentOffset = isNewSearch ? 0 : offset;
     
-    // We send sector and search to the API
-    const url = `/api/admin/read?table=vsales&limit=${LIMIT}&offset=${currentOffset}&search=${encodeURIComponent(search)}`;
+    if (isNewSearch) {
+      offsetRef.current = 0;
+    }
+
+    const url = `/api/admin/read?table=vsales&limit=${LIMIT}&offset=${offsetRef.current}&search=${encodeURIComponent(search)}`;
     
     try {
       const res = await fetch(url);
       const json = await res.json();
       
       if (Array.isArray(json)) {
-        // Filter by the active sector in frontend
-        const filteredBySector = json.filter(item => item.sector === activeSector);
+        // Filter rows that belong to the active visual sector tab
+        const targetedSectorRows = json.filter(item => item.sector === activeSector);
+        
+        // Append current batch results to memory array accumulator
+        const updatedAccumulated = [...currentAccumulated, ...targetedSectorRows];
 
-        if (isNewSearch) {
-          setData(filteredBySector);
-          setOffset(LIMIT);
-        } else {
-          setData(prev => [...prev, ...filteredBySector]);
-          setOffset(currentOffset + LIMIT);
+        // Shift database offset chunk index forward
+        offsetRef.current += LIMIT;
+        setOffset(offsetRef.current);
+
+        const serverHasMore = json.length === LIMIT;
+
+        // AUTOMATIC RECURSIVE CHECK
+        if (updatedAccumulated.length < LIMIT && serverHasMore) {
+          return await loadData(false, updatedAccumulated);
         }
-        // Note: hasMore might be tricky with frontend filtering, 
-        // but for now we keep it based on the raw response length
-        setHasMore(json.length === LIMIT);
+
+        // FINAL RE-RENDER COMMIT (Strict isolation per sector)
+        if (isNewSearch) {
+          setData(updatedAccumulated);
+        } else {
+          setData(prev => {
+            const combined = [...prev, ...updatedAccumulated];
+            const uniqueMap = new Map(combined.map(item => [item.id, item]));
+            return Array.from(uniqueMap.values());
+          });
+        }
+        
+        setHasMore(serverHasMore);
       }
     } catch (error) {
       console.error("Error loading vsales:", error);
     } finally {
       setLoading(false);
     }
-  }, [offset, search, activeSector]);
+  }, [search, activeSector]);
 
-  // 2. SEARCH & SECTOR EFFECT
+  // 2. RE-TRIGGER FLUSH AND INSTANT RESET ON SEARCH OR TAB CHANGE
   useEffect(() => {
+    // ¡LA CLAVE ESTÁ AQUÍ! Vaciamos la tabla inmediatamente al cambiar de pestaña o buscar
+    setData([]); 
+    setHasMore(true);
+    setLoading(true);
+
     const timer = setTimeout(() => {
       loadData(true);
     }, 400);
+    
     return () => clearTimeout(timer);
-  }, [search, activeSector]);
+  }, [search, activeSector, loadData]);
 
   return (
-    <div style={{ padding: '20px', maxWidth: '100vw' }}>
-      <header style={{ marginBottom: '20px' }}>
-        <h1 style={{ color: COLORS.primary, fontSize: '24px', marginBottom: '5px' }}>Vessel Sales Market</h1>
-        <p style={{ color: '#666', fontSize: '14px' }}>Historical market transactions and commercial data.</p>
+    <div className="space-y-6 max-w-7xl mx-auto animate-fade-in px-2">
+      
+      {/* HEADER SECTION */}
+      <header className="border-b border-slate-200 dark:border-slate-800/60 pb-5">
+        <h1 className="text-2xl font-[900] tracking-tighter text-slate-900 dark:text-white uppercase italic">
+          Vessel Sales Market
+        </h1>
+        <p className="mt-1.5 text-xs font-bold text-slate-400 dark:text-slate-500 tracking-tight">
+          Historical asset deals, commercial evaluations, and liquidity transactions records.
+        </p>
       </header>
 
-      {/* SECTOR SELECTOR (Consistency with VValues) */}
-      <div style={tabsContainer}>
+      {/* SECTOR TABS SELECTOR */}
+      <div className="flex gap-2 p-1 bg-slate-200/60 dark:bg-slate-900/40 w-fit rounded-xl border border-slate-200 dark:border-slate-800/40 backdrop-blur-md">
         {sectors.map((sector) => (
           <button
             key={sector}
             onClick={() => setActiveSector(sector)}
-            style={{
-              ...tabButton,
-              backgroundColor: activeSector === sector ? COLORS.primary : "white",
-              color: activeSector === sector ? "white" : "#666",
-              border: `1px solid ${activeSector === sector ? COLORS.primary : "#ddd"}`,
-            }}
+            className={`px-6 py-2 rounded-lg text-xs font-black tracking-wider uppercase transition-all duration-150 cursor-pointer ${
+              activeSector === sector
+                ? "bg-white dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-slate-200/80 dark:border-blue-500/30 shadow-sm"
+                : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white border border-transparent"
+            }`}
           >
             {sector === "DB" ? "Dry Bulk" : sector}
           </button>
         ))}
       </div>
 
-      {/* SEARCH BAR */}
-      <div style={searchBarContainer}>
+      {/* SEARCH TERMINAL BAR */}
+      <div className="flex items-center gap-4 bg-white dark:bg-slate-900/30 p-3 rounded-2xl border border-slate-200 dark:border-slate-800/60 backdrop-blur-md">
+        <div className="text-slate-400 dark:text-slate-500 pl-2 text-sm select-none">🔍</div>
         <input
           type="text"
-          placeholder={`Search in ${activeSector === "DB" ? "Dry Bulk" : activeSector} by name, type, buyer...`}
+          placeholder={`Global search in ${activeSector === "DB" ? "Dry Bulk" : activeSector} by vessel name, type, yard, or buyer...`}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          style={searchInputStyle}
+          className="flex-1 bg-transparent border-none text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-xs font-bold tracking-tight focus:outline-none focus:ring-0"
         />
-        {loading && <span style={loadingTextStyle}>Updating...</span>}
+        {loading && (
+          <span className="text-[10px] font-mono font-black text-blue-500 bg-blue-500/10 px-2.5 py-1 rounded-md border border-blue-500/10 uppercase animate-pulse">
+            Syncing
+          </span>
+        )}
       </div>
 
-      {/* DATA TABLE */}
-      <div style={tableWrapperStyle}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '1600px' }}>
-          <thead style={{ background: COLORS.primary, color: 'white' }}>
-            <tr>
-              <th style={thStyle}>Vessel Name</th>
-              <th style={thStyle}>Type</th>
-              <th style={thStyle}>DWT</th>
-              <th style={thStyle}>Built</th>
-              <th style={thStyle}>Yard</th>
-              <th style={thStyle}>Country</th>
-              <th style={thStyle}>Buyer</th>
-              <th style={thStyle}>Price</th>
-              <th style={thStyle}>Status</th>
-              <th style={thStyle}>Week / Year</th>
+      {/* HIGH-DENSITY LEDGER GRID */}
+      <div className="overflow-hidden bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/60 rounded-2xl shadow-sm dark:shadow-2xl backdrop-blur-md transition-colors duration-200">
+        <table className="w-full border-collapse text-left table-fixed">
+          <thead>
+            <tr className="bg-slate-50 dark:bg-slate-950/40 border-b border-slate-200 dark:border-slate-800/60 text-[9px] font-black tracking-wider text-slate-400 dark:text-slate-500 uppercase">
+              <th className="py-3 px-3 w-[14%]">Vessel Name</th>
+              <th className="py-3 px-2 w-[8%]">Type</th>
+              <th className="py-3 px-2 w-[10%]">DWT</th>
+              <th className="py-3 px-2 w-[6%]">Built</th>
+              <th className="py-3 px-2 w-[14%]">Shipyard</th>
+              <th className="py-3 px-2 w-[8%]">Flag</th>
+              <th className="py-3 px-2 w-[14%]">Buyer Entity</th>
+              <th className="py-3 px-2 w-[10%]">Price</th>
+              <th className="py-3 px-2 w-[8%]">Status</th>
+              <th className="py-3 px-3 w-[8%] text-right">Horizon</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-800/40 text-[11px] font-medium font-mono text-slate-700 dark:text-slate-300">
             {data.length > 0 ? (
               data.map((sale) => (
-                <tr key={sale.id} style={trStyle}>
-                  <td style={{ ...tdStyle, fontWeight: 'bold', color: '#333' }}>{sale.name}</td>
-                  <td style={tdStyle}>{sale.type}</td>
-                  <td style={tdStyle}>{sale.dwt?.toLocaleString()}</td>
-                  <td style={tdStyle}>{sale.year_b}</td>
-                  <td style={tdStyle}>{sale.yard}</td>
-                  <td style={tdStyle}>{sale.country}</td>
-                  <td style={tdStyle}>{sale.buyer}</td>
-                  <td style={{ ...tdStyle, fontWeight: 'bold', color: COLORS.primary }}>{sale.price || 'Undisc.'}</td>
-                  <td style={tdStyle}>{sale.status}</td>
-                  <td style={tdStyle}>{`W${sale.week} / ${sale.year_r}`}</td>
+                <tr 
+                  key={sale.id} 
+                  className="hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors duration-150"
+                >
+                  <td className="py-2.5 px-3 font-sans font-black text-slate-800 dark:text-white text-xs tracking-tight break-words">
+                    {sale.name}
+                  </td>
+                  <td className="py-2.5 px-2 font-sans text-slate-500 dark:text-slate-400 truncate">
+                    {sale.type}
+                  </td>
+                  <td className="py-2.5 px-2 font-bold text-slate-900 dark:text-slate-100">
+                    {sale.dwt ? sale.dwt.toLocaleString() : '-'}
+                  </td>
+                  <td className="py-2.5 px-2 text-slate-600 dark:text-slate-400">
+                    {sale.year_b}
+                  </td>
+                  <td className="py-2.5 px-2 font-sans text-slate-500 dark:text-slate-400 break-words leading-tight">
+                    {sale.yard || '-'}
+                  </td>
+                  <td className="py-2.5 px-2 font-sans uppercase text-[10px] text-slate-400 tracking-wide truncate">
+                    {sale.country || '-'}
+                  </td>
+                  <td className="py-2.5 px-2 font-sans text-slate-600 dark:text-slate-400 break-words leading-tight">
+                    {sale.buyer || '-'}
+                  </td>
+                  <td className="py-2.5 px-2 font-sans font-black">
+                    {sale.price ? (
+                      <span className="text-emerald-600 dark:text-emerald-400 bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/10 dark:border-emerald-500/20 px-1.5 py-0.5 rounded text-[10px]">
+                        ${sale.price}M
+                      </span>
+                    ) : (
+                      <span className="text-slate-400 dark:text-slate-500 italic text-[10px]">
+                        Undisc.
+                      </span>
+                    )}
+                  </td>
+                  <td className="py-2.5 px-2 font-sans">
+                    <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/40 text-slate-500 dark:text-slate-400">
+                      {sale.status || 'Done'}
+                    </span>
+                  </td>
+                  <td className="py-2.5 px-3 text-right font-bold text-slate-400 dark:text-slate-500 text-[10px]">
+                    {`W${sale.week}/${sale.year_r}`}
+                  </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="10" style={{ padding: '40px', textAlign: 'center', color: '#999' }}>
-                  {loading ? "Loading..." : "No records found for this selection."}
+                <td colSpan="10" className="py-16 text-center font-sans">
+                  <span className="text-xs text-slate-400 dark:text-slate-500 font-mono tracking-wider uppercase">
+                    {loading ? "Syncing financial streams..." : "No operational entries found matching current criteria."}
+                  </span>
                 </td>
               </tr>
             )}
@@ -136,24 +205,19 @@ export default function VSalesDashboard() {
         </table>
       </div>
 
-      {/* LOAD MORE BUTTON */}
+      {/* FOOTER PAGINATION CONTROL */}
       {hasMore && (
-        <button onClick={() => loadData(false)} disabled={loading} style={loadMoreButtonStyle}>
-          {loading ? "Loading..." : "Load More Records"}
-        </button>
+        <div className="flex justify-center pt-2">
+          <button 
+            onClick={() => loadData(false)} 
+            disabled={loading} 
+            className="px-6 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-black tracking-widest uppercase rounded-xl transition-all shadow-sm cursor-pointer disabled:opacity-50 text-slate-700 dark:text-slate-300"
+          >
+            {loading ? "Syncing..." : "Load More Market Transactions"}
+          </button>
+        </div>
       )}
+
     </div>
   );
 }
-
-// STYLES
-const tabsContainer = { display: 'flex', gap: '10px', marginBottom: '20px' };
-const tabButton = { padding: '10px 25px', borderRadius: '25px', cursor: 'pointer', fontSize: '14px', fontWeight: 'bold', transition: '0.2s' };
-const searchBarContainer = { marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '15px' };
-const searchInputStyle = { flex: 1, padding: '12px 15px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '15px' };
-const loadingTextStyle = { fontSize: '13px', color: COLORS.primary, fontWeight: '500' };
-const tableWrapperStyle = { overflowX: 'auto', background: 'white', borderRadius: '10px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', border: '1px solid #eee' };
-const thStyle = { padding: '15px 12px', textAlign: 'left', fontSize: '12px', textTransform: 'uppercase', whiteSpace: 'nowrap' };
-const tdStyle = { padding: '14px 12px', fontSize: '13px', color: '#555', borderBottom: '1px solid #f9f9f9', whiteSpace: 'nowrap' };
-const trStyle = { transition: 'background 0.2s' };
-const loadMoreButtonStyle = { display: 'block', margin: '30px auto', padding: '12px 25px', background: COLORS.primary, color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' };
