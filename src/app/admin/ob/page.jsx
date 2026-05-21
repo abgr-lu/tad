@@ -79,13 +79,13 @@ export default function AdminOBPage() {
     <div style={{ padding: '20px' }}>
       <h1 style={{ color: COLORS.primary }}>Admin: Orderbook</h1>
 
-      <div style={toolBarStyle}>
+      <div className='text-black' style={toolBarStyle}>
         <label style={labelStyle}>Cargar Entregas Futuras (CSV)</label>
         <input type="file" accept=".csv" onChange={handleCSVUpload} disabled={loading} />
         {loading && <span style={{ marginLeft: '10px' }}>Actualizando base de datos...</span>}
       </div>
 
-      <div style={{ overflowX: 'auto', background: 'white', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+      <div className='text-black' style={{ overflowX: 'auto', background: 'white', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '1000px' }}>
           <thead style={{ background: COLORS.primary, color: 'white' }}>
             <tr>

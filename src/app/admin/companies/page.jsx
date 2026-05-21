@@ -89,7 +89,7 @@ export default function AdminCompaniesPage() {
     <div style={{ maxWidth: '900px', margin: '40px auto', padding: '0 20px', fontFamily: 'sans-serif' }}>
       <h1 style={{ fontSize: '24px', marginBottom: '20px', color: COLORS.primary }}>Company Administration</h1>
 
-      <form onSubmit={handleSubmit} style={formBox}>
+      <form className='text-black' onSubmit={handleSubmit} style={formBox}>
         <div style={grid}>
           <input style={input} type="text" placeholder="Name" required 
                  onChange={e => setFormData({...formData, name: e.target.value})} value={formData.name} />
@@ -118,7 +118,7 @@ export default function AdminCompaniesPage() {
       <div style={{ marginTop: '50px' }}>
         <h2 style={{ fontSize: '18px', marginBottom: '15px' }}>Database Records</h2>
         <div style={tableCard}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <table className='text-black' style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: '#f4f4f4' }}>
                 <th style={th}>Name</th>

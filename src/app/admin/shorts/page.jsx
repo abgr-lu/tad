@@ -102,13 +102,13 @@ export default function AdminShortsPage() {
     <div style={{ padding: '20px' }}>
       <h1 style={{ color: COLORS.primary }}>Admin: Shorts Management</h1>
 
-      <div style={toolBarStyle}>
+      <div className='text-black' style={toolBarStyle}>
         <label style={labelStyle}>Import CSV File (Auto-cleans duplicates)</label>
         <input type="file" accept=".csv" onChange={handleCSVUpload} disabled={loading} />
         {loading && <span style={{ marginLeft: '10px', color: COLORS.primary }}>Processing...</span>}
       </div>
 
-      <div style={tableWrapperStyle}>
+      <div className='text-black' style={tableWrapperStyle}>
         <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '1200px' }}>
           <thead style={{ background: COLORS.primary, color: 'white' }}>
             <tr>

@@ -41,13 +41,12 @@ export default function AdminVSalesPage() {
   const handleCSVUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    setLoading(true);
+    loadingVideoDelay();
 
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
       complete: async (results) => {
-        // FILTRO DE SEGURIDAD: Eliminamos filas donde falte el sector o el nombre
         const validRows = results.data.filter(row => 
           row.sector && row.sector.trim() !== "" && 
           row.name && row.name.trim() !== ""
@@ -98,6 +97,8 @@ export default function AdminVSalesPage() {
     });
   };
 
+  const loadingVideoDelay = () => setLoading(true);
+
   const handleDelete = async (id) => {
     if (!confirm("¿Eliminar registro?")) return;
     try {
@@ -111,10 +112,29 @@ export default function AdminVSalesPage() {
     }
   };
 
+  // Mapeo simétrico de cabeceras asignando anchos porcentuales estrictos (Suman 100%)
+  const headers = [
+    { label: "Sector", width: "5%" },
+    { label: "Type", width: "7%" },
+    { label: "Ship Name", width: "10%" },
+    { label: "DWT", width: "7%" },
+    { label: "Built", width: "4%" },
+    { label: "Yard", width: "12%" },
+    { label: "Country", width: "5%" },
+    { label: "Buyer", width: "10%" },
+    { label: "Price", width: "6%" },
+    { label: "Scrub.", width: "4%" },
+    { label: "Status", width: "6%" },
+    { label: "Year", width: "4%" },
+    { label: "Week", width: "4%" },
+    { label: "Comments", width: "12%" },
+    { label: "Acción", width: "4%" }
+  ];
+
   return (
     <div style={{ padding: '20px', maxWidth: '100vw' }}>
       <h1 style={{ color: COLORS.primary }}>Admin VSales</h1>
-      <div style={toolBarStyle}>
+      <div className='text-black' style={toolBarStyle}>
         <input 
           type="text" 
           placeholder="Buscar..." 
@@ -125,12 +145,13 @@ export default function AdminVSalesPage() {
         <input type="file" accept=".csv" onChange={handleCSVUpload} disabled={loading} />
       </div>
 
-      <div style={tableWrapperStyle}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '1800px' }}>
+      {/* Eliminada la restricción de min-w-[1800px] y forzado el table-fixed */}
+      <div className='text-black' style={tableWrapperStyle}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
           <thead style={{ background: COLORS.primary, color: 'white' }}>
             <tr>
-              {["Sector", "Type", "Ship Name", "DWT", "Built", "Yard", "Country", "Buyer", "Price", "Scrub.", "Status", "Year", "Week", "Comments", "Acción"].map(h => (
-                <th key={h} style={thStyle}>{h}</th>
+              {headers.map(h => (
+                <th key={h.label} style={{ ...thStyle, width: h.width }}>{h.label}</th>
               ))}
             </tr>
           </thead>
@@ -146,14 +167,14 @@ export default function AdminVSalesPage() {
                 <td style={tdStyle}>{item.country}</td>
                 <td style={tdStyle}>{item.buyer}</td>
                 <td style={{ ...tdStyle, color: COLORS.success, fontWeight: 'bold' }}>{item.price}</td>
-                <td style={tdStyle}>{item.scrubber ? "✅" : "❌"}</td>
+                <td style={{ ...tdStyle, textAlign: 'center' }}>{item.scrubber ? "✅" : "❌"}</td>
                 <td style={tdStyle}>{item.status}</td>
                 <td style={tdStyle}>{item.year_r}</td>
                 <td style={tdStyle}>{item.week}</td>
-                <td style={{ ...tdStyle, maxWidth: '250px', whiteSpace: 'normal', fontSize: '11px', color: '#666' }}>
+                <td style={{ ...tdStyle, fontSize: '11px', color: '#666' }}>
                   {item.comments}
                 </td>
-                <td style={tdStyle}>
+                <td style={{ ...tdStyle, textAlign: 'center' }}>
                   <button onClick={() => handleDelete(item.id)} style={deleteBtnStyle}>🗑️</button>
                 </td>
               </tr>
@@ -168,9 +189,11 @@ export default function AdminVSalesPage() {
 
 const toolBarStyle = { display: 'flex', gap: '20px', marginBottom: '20px', background: '#f8f9fa', padding: '15px', borderRadius: '8px' };
 const inputSearchStyle = { padding: '8px', width: '300px', borderRadius: '4px', border: '1px solid #ccc' };
-const tableWrapperStyle = { overflowX: 'auto', background: 'white', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' };
-const thStyle = { padding: '12px', textAlign: 'left', fontSize: '12px', whiteSpace: 'nowrap' };
-const tdStyle = { padding: '10px', fontSize: '13px', borderBottom: '1px solid #f0f0f0' };
+// Eliminado el desbordamiento horizontal forzado
+const tableWrapperStyle = { background: 'white', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' };
+// Eliminado whiteSpace: 'nowrap' y añadidas propiedades de ruptura de texto fluida
+const thStyle = { padding: '12px 8px', textAlign: 'left', fontSize: '11px', fontWeight: 'bold' };
+const tdStyle = { padding: '10px 8px', fontSize: '11px', borderBottom: '1px solid #f0f0f0', wordBreak: 'break-word', overflowWrap: 'anywhere' };
 const trStyle = { transition: 'background 0.2s' };
-const deleteBtnStyle = { background: '#e74c3c', color: 'white', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer' };
+const deleteBtnStyle = { background: '#e74c3c', color: 'white', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' };
 const loadMoreBtnStyle = { display: 'block', margin: '30px auto', padding: '12px 25px', background: COLORS.primary, color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' };

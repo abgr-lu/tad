@@ -79,7 +79,7 @@ export default function AdminVValuesPage() {
   };
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div className='text-black' style={{ padding: '20px' }}>
       <h1 style={{ color: COLORS.primary }}>Admin: VValues</h1>
 
       <div style={toolBarStyle}>
