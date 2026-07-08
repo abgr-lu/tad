@@ -2,8 +2,6 @@ import { query } from '@/lib/db';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-
-// Componente para el botón de Logout (se mantiene idéntico)
 import LogoutButton from '@/app/components/LogoutButton'; 
 
 export default async function AdminLayout({ children }) {
@@ -19,7 +17,6 @@ export default async function AdminLayout({ children }) {
     redirect('/dashboard');
   }
 
-  // Lista de navegación para mapear limpiamente con los nuevos estilos
   const menuItems = [
     { href: '/admin/users', label: 'Usuarios', icon: '👥' },
     { href: '/admin/companies', label: 'Compañías', icon: '🏢' },
@@ -32,10 +29,8 @@ export default async function AdminLayout({ children }) {
   return (
     <div className="flex min-h-screen bg-slate-950 font-sans text-slate-100 antialiased selection:bg-blue-500/30">
       
-      {/* SIDEBAR ESTILO TERMINAL PREMIUM */}
       <nav className="w-64 bg-slate-900 border-r border-slate-800/80 p-6 flex flex-col justify-between shrink-0">
         <div>
-          {/* Header del Backoffice */}
           <div className="border-b border-slate-800/80 pb-6 mb-6">
             <div className="flex items-center gap-2">
               <span className="text-xl">🛠️</span>
@@ -48,7 +43,6 @@ export default async function AdminLayout({ children }) {
             </p>
           </div>
           
-          {/* Menú de Navegación */}
           <ul className="space-y-1.5">
             {menuItems.map((item) => (
               <li key={item.href}>
@@ -66,7 +60,6 @@ export default async function AdminLayout({ children }) {
           </ul>
         </div>
 
-        {/* Botón de Logout al final del menú (Respetado e integrado en la estética) */}
         <div className="border-t border-slate-800/80 pt-6 mt-6">
           <div className="bg-slate-950/40 p-1.5 rounded-2xl border border-slate-800/40 hover:border-red-500/20 transition-all group">
             <LogoutButton />
@@ -74,7 +67,6 @@ export default async function AdminLayout({ children }) {
         </div>
       </nav>
 
-      {/* ÁREA DE CONTENIDO (Fondo Slate oscuro, óptimo para gráficos y tablas sin cansar la vista) */}
       <main className="flex-1 p-10 bg-slate-950 overflow-y-auto">
         <div className="max-w-7xl mx-auto">
           {children}

@@ -58,7 +58,6 @@ export default function DashboardLayout({ children }) {
     });
   };
 
-  // Enlaces del menú traducidos al inglés estándar de la industria
   const sidebarLinks = [
     { name: "Overview", href: "/dashboard", icon: "🏢" },
     { name: "Companies", href: "/dashboard/companies", icon: "🏢" },

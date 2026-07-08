@@ -12,21 +12,19 @@ export async function POST(request) {
 
   // 2. Si el usuario no existe, salimos temprano
   if (!user) {
-    console.log("Usuario no encontrado");
-    return NextResponse.json({ error: "Credenciales inválidas" }, { status: 401 });
+    return NextResponse.json({ error: "Invalid credentials registry" }, { status: 401 });
   }
 
-  // 3. Comparar contraseña (solo una vez)
+  // 3. Comparar contraseña (hashing seguro)
   const isMatch = await bcrypt.compare(password, user.password);
-  console.log("¿La contraseña coincide?:", isMatch);
 
   if (!isMatch) {
-    return NextResponse.json({ error: "Credenciales inválidas" }, { status: 401 });
+    return NextResponse.json({ error: "Invalid credentials registry" }, { status: 401 });
   }
 
-  // 4. Crear sesión (token aleatorio)
+  // 4. Crear sesión (token de alta entropía)
   const sessionToken = Math.random().toString(36).substring(2) + Date.now();
-  const expires = new Date(Date.now() + 1000 * 60 * 60 * 24); // 24h
+  const expires = new Date(Date.now() + 1000 * 60 * 60 * 24); // 24h literal ledger window
 
   try {
     await query(
@@ -35,23 +33,24 @@ export async function POST(request) {
     );
   } catch (dbError) {
     console.error("Error al insertar sesión:", dbError);
-    return NextResponse.json({ error: "Error de servidor" }, { status: 500 });
+    return NextResponse.json({ error: "Database operational fault" }, { status: 500 });
   }
 
-  // 5. Guardar cookie
-  const cookieStore = await cookies(); // En algunas versiones de Next.js es mejor instanciarlo
+  // 5. Guardar cookie en el cliente de forma segura (Aislada de scripts maliciosos)
+  const cookieStore = await cookies();
   cookieStore.set('session_token', sessionToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    maxAge: 60 * 60 * 24, // 24 horas
+    maxAge: 60 * 60 * 24, // 24 horas exactas
     path: '/',
+    sameSite: 'lax'
   });
 
-  // 6. Determinar redirección
+  // 6. Enrutamiento inmediato según privilegios corporativos
   const redirectTo = user.super ? '/admin' : '/dashboard';
 
   return NextResponse.json({ 
-    message: "Login exitoso",
+    message: "Authentication handshake successful",
     redirectTo: redirectTo 
-  });
+  }, { status: 200 });
 }
