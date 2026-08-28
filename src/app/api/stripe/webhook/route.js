@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+// Añadimos el string vacío de respaldo y la versión de la API
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+  apiVersion: "2023-10-16",
+});
 
 // Desactivamos el parseo automático de Next.js porque Stripe necesita el body en crudo (raw) para verificar la firma
 export const dynamic = "force-dynamic";
