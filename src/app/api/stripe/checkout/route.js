@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+// Forzamos a Next.js a procesar esta ruta dinámicamente, ignorándola en el build
+export const dynamic = "force-dynamic";
+
+// Añadimos un string vacío como respaldo y definimos la versión de la API
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+  apiVersion: "2023-10-16",
+});
 
 export async function POST(req) {
   try {
