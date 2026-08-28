@@ -1,27 +1,22 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
-// Forzamos a Next.js a procesar esta ruta dinámicamente, ignorándola en el build
 export const dynamic = "force-dynamic";
-
-// Añadimos un string vacío como respaldo y definimos la versión de la API
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2023-10-16",
-});
 
 export async function POST(req) {
   try {
+    // 1. Inicializamos Stripe DENTRO de la función para ocultarlo del compilador
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: "2023-10-16",
+    });
+
     const { priceId, userEmail, userId } = await req.json();
 
     if (!priceId) {
       return NextResponse.json({ error: "Missing priceId parameter" }, { status: 400 });
     }
 
-    // Comprobamos si es la oferta semestral y si el usuario ya existe en tu sistema
     const isSemestral = priceId === process.env.NEXT_PUBLIC_STRIPE_PRICE_SEMESTRAL;
-    
-    // Si tienes lógica para bloquear a usuarios existentes que intenten usar el semestral,
-    // puedes meter una validación aquí con tu base de datos si userId existe.
 
     // Creamos la sesión de pago seguro en los servidores de Stripe
     const session = await stripe.checkout.sessions.create({
@@ -33,7 +28,6 @@ export async function POST(req) {
           quantity: 1,
         },
       ],
-      // Pasamos metadatos clave para que el Webhook sepa a quién activar el acceso tras el cobro
       metadata: {
         userId: userId || null,
         userEmail: userEmail || null,
