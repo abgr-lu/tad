@@ -37,8 +37,8 @@ export default function LandingPage() {
         {/* HEADER */}
         <nav className="relative z-50 flex justify-between items-center px-10 py-8">
           <div>
-            <span className="text-3xl font-black tracking-tighter text-white">Aegis</span>
-            <span className="text-3xl font-black tracking-tighter text-blue-400"> Maritime</span>
+            <span className="text-3xl font-black tracking-tighter text-white">Ourios</span>
+            <span className="text-3xl font-black tracking-tighter text-blue-400"> Analytics</span>
             </div>
           <div className="flex items-center gap-6">
             <button className="text-sm font-bold text-white/80 hover:text-white transition-colors">SIGN IN</button>

@@ -7,8 +7,8 @@ const inter = Inter({
 });
 
 export const metadata = {
-  title: 'Aegis Maritime Intelligence',
-  description: 'Advanced Data for the Maritime Economy',
+  title: 'Ourios Analytics',
+  description: 'Analytics for shipping investors',
 };
 
 export default function RootLayout({ children }) {
