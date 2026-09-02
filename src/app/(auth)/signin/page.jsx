@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 
 // 1. Extraemos la lógica y el formulario a un componente secundario
 function SignInForm() {
@@ -70,7 +71,7 @@ function SignInForm() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">
-            Corporate Email Address
+            Email Address
           </label>
           <input 
             type="email" 
@@ -82,17 +83,25 @@ function SignInForm() {
         </div>
 
         <div>
-          <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">
-            Access Password
-          </label>
-          <input 
-            type="password" 
-            required 
-            placeholder="••••••••••••"
-            onChange={e => setForm({...form, password: e.target.value})} 
-            className="w-full bg-slate-950/60 border border-white/10 text-white placeholder-slate-600 rounded-xl px-4 py-3 text-xs font-bold tracking-tight focus:outline-none focus:border-blue-500 transition-colors"
-          />
-        </div>
+            <div className="flex justify-between items-center mb-1.5">
+              <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400">
+                Access Password
+              </label>
+              <Link 
+                href="/forgot-password" 
+                className="text-[10px] font-bold text-blue-400 hover:text-blue-300 transition-colors"
+              >
+                Forgot password?
+              </Link>
+            </div>
+            <input 
+              type="password" 
+              required 
+              placeholder="••••••••••••"
+              onChange={e => setForm({...form, password: e.target.value})} 
+              className="w-full bg-slate-950/60 border border-white/10 text-white placeholder-slate-600 rounded-xl px-4 py-3 text-xs font-bold tracking-tight focus:outline-none focus:border-blue-500 transition-colors"
+            />
+          </div>
 
         <button 
           type="submit" 
