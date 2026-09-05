@@ -8,14 +8,38 @@ export default function LandingPage() {
   const [mounted, setMounted] = useState(false);
   
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  
-  // NUEVO ESTADO: Controla si el usuario ya existe para cambiar el botón
   const [isExistingUser, setIsExistingUser] = useState(false);
 
   const router = useRouter();
+
+  const includedCompanies = [
+    "Okeanis Eco Tankers",
+    "Frontline",
+    "DHT Holdings",
+    "Nordic American Tankers (NAT)",
+    "Teekay Tankers",
+    "International Seaways",
+    "Torm plc",
+    "Scorpio Tankers",
+    "Ardmore Shipping",
+    "D'Amico",
+    "Performance Shipping",
+    "Pyxis Tankers",
+    "Imperial Petroleum",
+    "Himalaya Shipping",
+    "Star Bulk Carriers",
+    "Genco Shipping",
+    "Safe Bulkers",
+    "Seanergy Maritime",
+    "United Maritime",
+    "Pangaea Logistics Solutions",
+    "Diana Shipping"
+  ];
 
   useEffect(() => {
     setMounted(true);
@@ -43,19 +67,18 @@ export default function LandingPage() {
 
       if (checkData.exists) {
         setEmailError('This email is already registered. Please sign in to choose a plan.');
-        setIsExistingUser(true); // Activamos el cambio de botón
+        setIsExistingUser(true);
         setIsProcessing(false);
         return;
       }
 
-      // Si es nuevo, procesamos el pago indicando que es un pago único ('payment')
       const stripeRes = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_NEW_USER,
           email: email,
-          mode: 'payment' // Esto soluciona el error de Stripe
+          mode: 'payment'
         }),
       });
       
@@ -77,7 +100,7 @@ export default function LandingPage() {
 
   return (
     <div className={`${isDarkMode ? 'dark' : ''}`}>
-      <main className="relative min-h-screen w-full bg-slate-950 font-sans selection:bg-blue-500/30">
+      <main className="relative min-h-screen w-full bg-slate-950 font-sans selection:bg-blue-500/35">
         
         <div 
           className="absolute inset-0 z-0 bg-cover bg-center"
@@ -86,12 +109,18 @@ export default function LandingPage() {
           <div className={`absolute inset-0 ${isDarkMode ? 'bg-black/50' : 'bg-slate-900/5'} backdrop-brightness-85`} />
         </div>
 
+        {/* NAVEGACIÓN Y LOGOTIPO CON EFECTO DE LÍNEAS MARÍTIMAS */}
         <nav className="relative z-50 flex justify-between items-center px-10 py-8">
-          <div>
-            <span className="text-5xl font-black tracking-tighter text-white">Ourios</span>
+          <div className="flex flex-col">
+            <span className="text-4xl md:text-5xl font-black tracking-tighter text-white uppercase italic">Ourios</span>
+            {/* Líneas horizontales tenues simulando las olas del mar */}
+            <div className="flex flex-col gap-1 mt-1 opacity-70">
+              <div className="h-[2px] w-full bg-gradient-to-r from-blue-500 via-sky-400 to-transparent rounded-full" />
+              <div className="h-[1px] w-4/5 bg-gradient-to-r from-blue-400/50 to-transparent rounded-full" />
+            </div>
           </div>
           <div className="flex items-center gap-6">
-            <Link href="/signin" className="text-sm font-bold text-white/80 hover:text-white transition-colors">SIGN IN</Link>
+            <Link href="/signin" className="mt-12 w-full bg-blue-600 text-white py-3 px-3 rounded-2xl font-black text-xs tracking-[0.2em] hover:bg-blue-400 transition-all shadow-lg shadow-blue-600/40 uppercase cursor-pointer">SIGN IN</Link>
           </div>
         </nav>
 
@@ -132,11 +161,21 @@ export default function LandingPage() {
                 ))}
               </div>
 
+              {/* BOTÓN O ENLACE "MORE DETAILS" AL FINAL DEL CUADRANTE */}
+              <div className="mt-4 text-center">
+                <button 
+                  onClick={() => setIsDetailsModalOpen(true)}
+                  className="text-xs font-bold text-blue-400 hover:text-blue-300 uppercase tracking-widest underline decoration-blue-500/40 underline-offset-4 transition-colors cursor-pointer"
+                >
+                  More Details →
+                </button>
+              </div>
+              
               <button 
                 onClick={() => router.push('/signin')}
-                className="mt-12 w-full bg-white text-black py-5 rounded-2xl font-black text-xs tracking-[0.2em] hover:bg-blue-500 hover:text-white transition-all uppercase"
+                className="mt-12 w-full bg-white text-black py-5 rounded-2xl font-black text-xs tracking-[0.2em] hover:bg-blue-500 hover:text-white transition-all uppercase cursor-pointer"
               >
-                Sign in to subscribe
+                Sign in
               </button>
             </div>
 
@@ -164,16 +203,16 @@ export default function LandingPage() {
 
               <button 
                 onClick={() => router.push('/signin')}
-                className="mt-12 w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-xs tracking-[0.2em] hover:bg-blue-400 transition-all shadow-lg shadow-blue-600/40 uppercase"
+                className="mt-12 w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-xs tracking-[0.2em] hover:bg-blue-400 transition-all shadow-lg shadow-blue-600/40 uppercase cursor-pointer"
               >
-                Sign in to subscribe
+                Sign in
               </button>
             </div>
           </div>
 
           {/* New Users */}
           <div className="mt-16 grid md:grid-cols-1 gap-8 w-full max-w-5xl px-4 pb-20 justify-items-center">
-            <div className="group relative bg-blue-600/10 backdrop-blur-3xl border border-blue-500/30 rounded-[40px] p-10 overflow-hidden transition-all hover:scale-[1.02] shadow-2xl shadow-blue-500/10">
+            <div className="group relative bg-blue-600/10 backdrop-blur-3xl border border-blue-500/30 rounded-[40px] p-10 overflow-hidden transition-all hover:scale-[1.02] shadow-2xl shadow-blue-500/10 w-full">
               <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-400/30 blur-[80px] rounded-full" />
               
               <div className="flex justify-between items-start mb-8">
@@ -194,15 +233,16 @@ export default function LandingPage() {
 
               <button 
                 onClick={() => setIsModalOpen(true)}
-                className="mt-12 w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-xs tracking-[0.2em] hover:bg-blue-400 transition-all shadow-lg shadow-blue-600/40 uppercase"
+                className="mt-12 w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-xs tracking-[0.2em] hover:bg-blue-400 transition-all shadow-lg shadow-blue-600/40 uppercase cursor-pointer"
               >
                 Claim New User Offer
               </button>
+
             </div>
           </div>
         </div>
 
-        {/* VENTANA FLOTANTE (MODAL) CON LÓGICA DE BOTONES DINÁMICA */}
+        {/* VENTANA FLOTANTE (MODAL) PARA CORREO (CHECKOUT) */}
         {isModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 bg-black/80 backdrop-blur-sm animate-fade-in">
             <div className="relative w-full max-w-md bg-slate-900 border border-white/10 rounded-[30px] p-8 shadow-2xl">
@@ -214,7 +254,7 @@ export default function LandingPage() {
                   setIsExistingUser(false); 
                   setEmail('');
                 }}
-                className="absolute top-6 right-6 text-slate-400 hover:text-white"
+                className="absolute top-6 right-6 text-slate-400 hover:text-white cursor-pointer"
               >
                 ✕
               </button>
@@ -230,7 +270,6 @@ export default function LandingPage() {
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
-                    // Reiniciamos el estado si el usuario decide escribir otro correo
                     setIsExistingUser(false);
                     setEmailError('');
                   }}
@@ -243,12 +282,11 @@ export default function LandingPage() {
                   </div>
                 )}
 
-                {/* RENDERIZADO CONDICIONAL DE BOTONES */}
                 {isExistingUser ? (
                   <button 
                     type="button" 
                     onClick={() => router.push('/signin')}
-                    className="w-full bg-slate-700 text-white py-4 rounded-xl font-black text-xs tracking-[0.2em] hover:bg-slate-600 transition-all uppercase"
+                    className="w-full bg-slate-700 text-white py-4 rounded-xl font-black text-xs tracking-[0.2em] hover:bg-slate-600 transition-all uppercase cursor-pointer"
                   >
                     Go to Sign In
                   </button>
@@ -256,7 +294,7 @@ export default function LandingPage() {
                   <button 
                     type="submit" 
                     disabled={isProcessing}
-                    className="w-full bg-blue-600 text-white py-4 rounded-xl font-black text-xs tracking-[0.2em] hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all uppercase"
+                    className="w-full bg-blue-600 text-white py-4 rounded-xl font-black text-xs tracking-[0.2em] hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all uppercase cursor-pointer"
                   >
                     {isProcessing ? 'Verifying...' : 'Continue to Payment'}
                   </button>
@@ -266,9 +304,82 @@ export default function LandingPage() {
           </div>
         )}
 
+        {/* NUEVA VENTANA MODAL "MORE DETAILS" CON ESPECIFICACIONES Y OFERTA */}
+        {isDetailsModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
+            <div className="relative w-full max-w-2xl bg-slate-900 border border-white/10 rounded-[30px] p-8 shadow-2xl max-h-[90vh] overflow-y-auto">
+              
+              <button 
+                onClick={() => setIsDetailsModalOpen(false)}
+                className="absolute top-6 right-6 text-slate-400 hover:text-white font-mono text-sm uppercase tracking-wider cursor-pointer bg-slate-800/50 hover:bg-slate-800 px-3 py-1 rounded-lg transition-colors"
+              >
+                Close [X]
+              </button>
+
+              <div className="space-y-4 text-xs font-medium text-slate-300 leading-relaxed mb-8">
+                <span className="text-3xl font-black tracking-tighter text-white uppercase italic">Ourios</span>
+                {/* Líneas horizontales tenues simulando las olas del mar */}
+                <div className="flex flex-col gap-1 mt-1 opacity-70 mb-4">
+                  <div className="h-[2px] w-32 bg-gradient-to-r from-blue-500 via-sky-400 to-transparent rounded-full" />
+                  <div className="h-[1px] w-24 bg-gradient-to-r from-blue-400/50 to-transparent rounded-full" />
+                </div>
+
+                <p className="font-bold text-white text-sm">Do you want to invest in shipping as a professional investor?</p>
+                <p className="font-bold text-white text-sm">Are you already investing and you want to save a lot of time having the models already done and updated?</p>
+                <p className="font-bold text-white text-sm">Would you like to play with the models making your own assumptions?</p>
+                <p className="font-bold text-white text-sm">Do you want to know the vessel values without being inflated at any time?</p>
+
+                <div className="border-t border-slate-800 pt-6 mt-6">
+                  <h4 className="text-sm font-black text-white uppercase tracking-wider mb-3">Enjoy:</h4>
+                  <ul className="list-disc list-inside space-y-2 text-slate-300 mb-6">
+                    <li>Vessels Valuations daily updated</li>
+                    <li>2 Master models: you just need to keep these 2 models open to see and summarize all the main info you need to know to see if it's or not a good moment to invest.</li>
+                  </ul>
+
+                  <h4 className="text-sm font-black text-white uppercase tracking-wider mb-3">Models of:</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {includedCompanies.map((company, index) => (
+                      <div key={index} className="flex items-center gap-2 p-2.5 bg-slate-950/60 border border-white/5 rounded-xl text-slate-300">
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                        <span className="font-semibold">{company}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* CONTENEDOR FLEX CENTRADO PARA EL BOTÓN "Claim Offer Now" */}
+              <div className="flex flex-col items-center text-center p-6 bg-blue-600/10 border border-blue-500/30 rounded-2xl my-6">
+                <p className="text-blue-300 font-bold text-sm mb-4">
+                  Now you have everything for a very fair price. Only $199/month. But, if you are a new user, try our "new users launch offer" just paying $199 for the first six months.
+                </p>
+                <button
+                  onClick={() => {
+                    setIsDetailsModalOpen(false);
+                    setIsModalOpen(true);
+                  }}
+                  className="bg-blue-600 hover:bg-blue-500 text-white font-black text-xs tracking-widest uppercase px-8 py-3.5 rounded-xl transition-all shadow-lg shadow-blue-600/40 cursor-pointer"
+                >
+                  Claim Offer Now ($199 / 6 Months)
+                </button>
+              </div>
+
+              <div className="border-t border-slate-800 pt-6 flex justify-end">
+                <button 
+                  onClick={() => setIsDetailsModalOpen(false)}
+                  className="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold tracking-widest uppercase px-6 py-3 rounded-xl transition-colors cursor-pointer"
+                >
+                  Close Window
+                </button>
+              </div>
+
+            </div>
+          </div>
+        )}
+
         <button 
           onClick={toggleTheme}
-          className="fixed bottom-10 right-10 z-50 bg-white/10 backdrop-blur-xl border border-white/20 px-6 py-3 rounded-full text-[10px] font-black text-white tracking-[0.2em] hover:bg-white/20 transition-all"
+          className="fixed bottom-10 right-10 z-50 bg-white/10 backdrop-blur-xl border border-white/20 px-6 py-3 rounded-full text-[10px] font-black text-white tracking-[0.2em] hover:bg-white/20 transition-all cursor-pointer"
         >
           {isDarkMode ? 'LIGHT MODE' : 'DARK MODE'}
         </button>

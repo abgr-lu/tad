@@ -16,76 +16,115 @@ export default function CompanyProfile() {
       });
   }, [id]);
 
-  if (!company) return <p>Cargando información detallada...</p>;
+  if (!company) {
+    return (
+      <div className="flex justify-center items-center h-[60vh]">
+        <span className="text-xs font-mono uppercase tracking-widest text-slate-400 dark:text-slate-500 animate-pulse">
+          Loading company profile data...
+        </span>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ maxWidth: '1100px', margin: '0 auto', fontFamily: 'Segoe UI, sans-serif' }}>
-      <button onClick={() => router.back()} style={{ marginBottom: '20px', border: 'none', background: 'none', cursor: 'pointer', color: '#1a73e8' }}>⬅️ Volver al listado</button>
+    <div className="space-y-8 max-w-5xl mx-auto animate-fade-in pb-12">
       
-      {/* Cabecera con Logo */}
-      <div style={{ background: '#fff', padding: '30px', borderRadius: '12px', border: '1px solid #e0e0e0', display: 'flex', alignItems: 'center', gap: '25px', marginBottom: '30px' }}>
-        {company.logo_url && <img src={company.logo_url} style={{ height: '70px', borderRadius: '8px' }} />}
-        <div>
-          <h1 style={{ margin: 0, fontSize: '2rem' }}>{company.name}</h1>
-          <div style={{ display: 'flex', gap: '10px', marginTop: '5px' }}>
-            <span style={{ background: '#e8f0fe', color: '#1a73e8', padding: '2px 8px', borderRadius: '4px', fontSize: '14px' }}>{company.ticket_1}</span>
-            {company.ticket_2 && <span style={{ background: '#f1f3f4', padding: '2px 8px', borderRadius: '4px', fontSize: '14px' }}>{company.ticket_2}</span>}
+      {/* BOTÓN DE RETORNO */}
+      <button 
+        onClick={() => router.back()} 
+        className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors cursor-pointer"
+      >
+        ← Return to Directory
+      </button>
+      
+      {/* CABECERA CON LOGO Y TICKERS */}
+      <div className="bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-slate-800 p-8 rounded-xl shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-6">
+        {company.logo_url && (
+          <img src={company.logo_url} alt={`${company.name} logo`} className="h-16 object-contain rounded-lg bg-slate-50 dark:bg-slate-900/50 p-2 border border-slate-200 dark:border-slate-800" />
+        )}
+        <div className="flex-1">
+          <h1 className="text-2xl sm:text-3xl font-[900] tracking-tighter text-slate-900 dark:text-white uppercase italic">
+            {company.name}
+          </h1>
+          <div className="flex flex-wrap gap-2 mt-3">
+            <span className="font-mono text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-md tracking-wide">
+              {company.ticket_1}
+            </span>
+            {company.ticket_2 && (
+              <span className="font-mono text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 px-3 py-1 rounded-md tracking-wide">
+                {company.ticket_2}
+              </span>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Grid de Métricas Principales */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '30px' }}>
-        <Stat label="Precio" value={`$${company.price}`} />
-        <Stat label="M. Cap" value={`$${company.mcap}M`} />
-        <Stat label="EV" value={`$${company.ev}M`} />
-        <Stat label="P/NAV" value={`${company.pnav}x`} />
-        <Stat label="EV/EBITDA" value={`${company.ev_ebitda}x`} />
-        <Stat label="PER" value={`${company.per}x`} />
-        <Stat label="FCF" value={`${company.fcf}%`} />
-        <Stat label="EPS" value={`$${company.eps}`} />
-        <Stat label="Dividendo" value={`$${company.divi}`} />
-        <Stat label="Div. Yield" value={`${company.divi_yield}%`} />
+      {/* GRID DE MÉTRICAS PRINCIPALES */}
+      <div>
+        <h3 className="text-[10px] font-bold tracking-[0.2em] text-slate-400 dark:text-slate-500 uppercase mb-4 pl-1">
+          Institutional Valuation Metrics
+        </h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+          <Stat label="Price" value={`$${company.price}`} />
+          <Stat label="M. Cap" value={`$${company.mcap}M`} />
+          <Stat label="EV" value={`$${company.ev}M`} />
+          <Stat label="P/NAV" value={`${company.pnav}x`} />
+          <Stat label="EV/EBITDA" value={`${company.ev_ebitda}x`} />
+          <Stat label="PER" value={`${company.per}x`} />
+          <Stat label="FCF" value={`${company.fcf}%`} />
+          <Stat label="EPS" value={`$${company.eps}`} />
+          <Stat label="Dividend" value={`$${company.divi}`} />
+          <Stat label="Div. Yield" value={`${company.divi_yield}%`} />
+        </div>
       </div>
 
-      {/* Sección de Flota / TCE */}
-      <div style={{ background: '#fff', padding: '30px', borderRadius: '12px', border: '1px solid #e0e0e0', marginBottom: '30px' }}>
-        <h3 style={{ borderBottom: '1px solid #eee', paddingBottom: '10px' }}>🚢 Flota y TCE Equivalente (Global: ${company.tce})</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px', marginTop: '20px' }}>
+      {/* SECCIÓN DE FLOTA / TCE */}
+      <div className="bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-slate-800 p-8 rounded-xl shadow-sm">
+        <h3 className="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-4">
+          Fleet & Equivalent TCE <span className="text-xs font-normal text-slate-400 dark:text-slate-500 ml-2">(Global Average: ${company.tce})</span>
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3 mt-6">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => (
             company[`vt${num}`] && (
-              <div key={num} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px dashed #eee' }}>
-                <span style={{ color: '#5f6368' }}>{company[`vt${num}`]}</span>
-                <span style={{ fontWeight: 'bold' }}>${company[`tce${num}`]}</span>
+              <div key={num} className="flex justify-between items-center py-2.5 border-b border-dashed border-slate-200 dark:border-slate-800/80 text-xs">
+                <span className="text-slate-600 dark:text-slate-400 font-medium">{company[`vt${num}`]}</span>
+                <span className="font-mono font-bold text-slate-900 dark:text-white">${company[`tce${num}`]}</span>
               </div>
             )
           ))}
         </div>
       </div>
 
-      {/* Sección de Management / CEO */}
-      <div style={{ background: '#fff', padding: '30px', borderRadius: '12px', border: '1px solid #e0e0e0' }}>
-        <h3 style={{ borderBottom: '1px solid #eee', paddingBottom: '10px' }}>👨‍💼 Management</h3>
-        <div style={{ marginTop: '20px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
-            <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{company.ceo_name}</span>
-            <span style={{ color: '#188038', background: '#e6f4ea', padding: '4px 12px', borderRadius: '20px', fontWeight: 'bold' }}>Score: {company.ceo_scored}/100</span>
+      {/* SECCIÓN DE MANAGEMENT / CEO */}
+      <div className="bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-slate-800 p-8 rounded-xl shadow-sm">
+        <h3 className="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-4">
+          Management & Track Record
+        </h3>
+        <div className="mt-6 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <span className="text-base font-bold text-slate-900 dark:text-white">{company.ceo_name}</span>
+            <span className="w-fit text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-md text-xs font-black tracking-wider uppercase">
+              Score: {company.ceo_scored}/100
+            </span>
           </div>
-          <p style={{ lineHeight: '1.7', color: '#3c4043' }}>{company.ceo_history}</p>
-          <div style={{ marginTop: '20px', borderTop: '1px solid #eee', paddingTop: '15px', fontSize: '14px', color: '#5f6368' }}>
-            <strong>Scrubber Flota:</strong> {company.scrubber}%
+          <p className="text-xs sm:text-sm leading-relaxed text-slate-600 dark:text-slate-400 font-medium">
+            {company.ceo_history}
+          </p>
+          <div className="pt-4 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-500 flex items-center gap-2 font-mono">
+            <strong className="text-slate-700 dark:text-slate-300 uppercase tracking-wider text-[10px]">Scrubber Fleet Ratio:</strong> {company.scrubber}%
           </div>
         </div>
       </div>
+
     </div>
   );
 }
 
 function Stat({ label, value }) {
   return (
-    <div style={{ background: '#fff', padding: '20px', borderRadius: '12px', border: '1px solid #e0e0e0', textAlign: 'center' }}>
-      <div style={{ fontSize: '12px', color: '#5f6368', marginBottom: '5px', textTransform: 'uppercase' }}>{label}</div>
-      <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#202124' }}>{value}</div>
+    <div className="bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-slate-800 p-5 rounded-xl text-center shadow-sm flex flex-col justify-between">
+      <div className="text-[10px] font-bold tracking-widest text-slate-400 dark:text-slate-500 uppercase mb-2">{label}</div>
+      <div className="text-base sm:text-lg font-black font-mono text-slate-900 dark:text-white">{value}</div>
     </div>
   );
 }

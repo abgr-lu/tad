@@ -94,7 +94,7 @@ export default function AdminCompaniesPage() {
           <input style={input} type="text" placeholder="Name" required 
                  onChange={e => setFormData({...formData, name: e.target.value})} value={formData.name} />
           
-          <input style={input} type="text" placeholder="Ticker 1" required 
+          <input style={input} type="text" placeholder="Ticker 1" 
                  onChange={e => setFormData({...formData, ticket_1: e.target.value})} value={formData.ticket_1} />
         </div>
 
@@ -103,6 +103,7 @@ export default function AdminCompaniesPage() {
           <select style={input} value={formData.sector} onChange={e => setFormData({...formData, sector: e.target.value})}>
             <option value="Tankers">Tankers</option>
             <option value="DB">Dry Bulk</option>
+            <option value="Master">Master</option>
           </select>
         </div>
 

@@ -3,7 +3,6 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
-// 1. Extraemos la lógica y el formulario a un componente secundario
 function SignInForm() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
@@ -11,7 +10,6 @@ function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Capturar alertas del Middleware
   useEffect(() => {
     const errorParam = searchParams.get('error');
     if (errorParam === 'subscription_expired') {
@@ -43,18 +41,16 @@ function SignInForm() {
   return (
     <div className="relative z-10 w-full max-w-md mx-4 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[40px] p-10 shadow-2xl shadow-black/50 animate-fade-in">
       
-      {/* ENCABEZADO CORPORATIVO */}
+      {/* ENCABEZADO CORPORATIVO OURIOS */}
       <div className="text-center mb-8">
         <div className="mb-2">
-          <span className="text-2xl font-black tracking-tighter text-white">Aegis</span>
-          <span className="text-2xl font-black tracking-tighter text-blue-400"> Maritime</span>
+          <span className="text-3xl font-black tracking-tighter text-white uppercase italic">Ourios</span>
         </div>
-        <h2 className="text-xs font-black tracking-[0.25em] text-slate-400 uppercase">
+        <h2 className="text-xs font-black tracking-[0.25em] text-slate-400 uppercase mt-1">
           Secure Terminal Access
         </h2>
       </div>
 
-      {/* BANNERS DE FEEDBACK / ALERTAS */}
       {infoMessage && (
         <div className="mb-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl text-xs font-semibold text-blue-300 italic leading-relaxed">
           {infoMessage}
@@ -67,7 +63,6 @@ function SignInForm() {
         </div>
       )}
 
-      {/* FORMULARIO DE ACCESO */}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">
@@ -111,7 +106,6 @@ function SignInForm() {
         </button>
       </form>
 
-      {/* RETORNO A LA LANDING */}
       <div className="mt-8 text-center">
         <button 
           onClick={() => router.push('/')}
@@ -124,12 +118,10 @@ function SignInForm() {
   );
 }
 
-// 2. Componente principal exportado que envuelve el formulario en Suspense
 export default function SignIn() {
   return (
     <main className="relative min-h-screen w-full bg-slate-950 font-sans flex items-center justify-center selection:bg-blue-500/30">
       
-      {/* IMAGEN DE FONDO (Carga de inmediato) */}
       <div 
         className="absolute inset-0 z-0 bg-cover bg-center"
         style={{ backgroundImage: `url('/bg_02.jpeg')` }}
@@ -137,7 +129,6 @@ export default function SignIn() {
         <div className="absolute inset-0 bg-black/60 backdrop-blur-md" />
       </div>
 
-      {/* LÍMITE DE SUSPENSE PARA EL FORMULARIO */}
       <Suspense fallback={
         <div className="relative z-10 w-full max-w-md mx-4 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[40px] p-10 flex justify-center items-center h-[400px]">
           <span className="text-blue-400 text-sm font-bold animate-pulse uppercase tracking-widest">Loading secure terminal...</span>

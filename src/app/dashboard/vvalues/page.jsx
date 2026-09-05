@@ -54,17 +54,14 @@ export default function VValuesDashboard() {
       <header className="border-b border-slate-200 dark:border-slate-800/60 pb-5 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-[900] tracking-tighter text-slate-900 dark:text-white uppercase italic">
-            Current Vessel Valuations
+            Vessel Valuations
           </h1>
-          <p className="mt-1.5 text-xs font-bold text-slate-400 dark:text-slate-500 tracking-tight">
-            Automated algorithm pricing matrices mapped across asset age horizons.
-          </p>
         </div>
         
         {/* TIMESTAMPS / METADATA BADGE */}
         {latestInfo.year && (
           <div className="bg-blue-500/5 dark:bg-blue-500/10 border border-blue-500/20 px-3 py-1.5 rounded-xl text-xs font-bold text-blue-600 dark:text-blue-400 w-fit shrink-0 font-mono tracking-tight shadow-sm shadow-blue-500/5">
-            DATA HORIZON: Week {latestInfo.week}, {latestInfo.year}
+            Week {latestInfo.week}, {latestInfo.year}
           </div>
         )}
       </header>
@@ -114,15 +111,15 @@ export default function VValuesDashboard() {
                     </td>
                     
                     {/* VALUATION HORIZONS */}
-                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">${item.nb}M</td>
-                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">${item["5"]}M</td>
-                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">${item["10"]}M</td>
-                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">${item["15"]}M</td>
-                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">${item["20"]}M</td>
+                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">${item.nb}</td>
+                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">${item["5"]}</td>
+                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">${item["10"]}</td>
+                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">${item["15"]}</td>
+                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">${item["20"]}</td>
                     
                     {/* SCRAP VALUE (Highlighted subtly with a soft slate accent badge) */}
                     <td className="py-3.5 px-4 font-black text-slate-500 dark:text-slate-400">
-                      ${item.scrap}M
+                      ${item.scrap}
                     </td>
                   </tr>
                 ))
@@ -151,10 +148,8 @@ export default function VValuesDashboard() {
 
       {/* FOOTER LEGEND */}
       <footer className="text-[10px] font-mono text-slate-400 dark:text-slate-600 tracking-wider uppercase flex items-center gap-2">
-        <span>* Asset valuation matrices are denominated in Million USD ($M).</span>
-        <span className="hidden sm:inline">//</span>
-        <span className="hidden sm:inline">Temporal Index: Week {latestInfo.week || '--'}/{latestInfo.year || '----'}</span>
-      </footer>
+        <span>* In Million USD ($M)</span>
+        </footer>
 
     </div>
   );

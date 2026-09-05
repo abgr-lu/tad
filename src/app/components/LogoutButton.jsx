@@ -25,7 +25,7 @@ export default function LogoutButton() {
         fontWeight: 'bold'
       }}
     >
-      Cerrar Sesión
+      Sign out
     </button>
   );
 }

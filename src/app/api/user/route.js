@@ -10,9 +10,9 @@ export async function GET() {
     return NextResponse.json({ error: "No hay sesión" }, { status: 401 });
   }
 
-  // AÑADIMOS: u.country y u.image a la consulta
+  // AÑADIMOS: los campos de suscripción (subscription_ends_at, premium) y permisos (super)
   const res = await query(
-    `SELECT u.name, u.email, u.country, u.image 
+    `SELECT u.name, u.email, u.country, u.image, u.subscription_ends_at, u.super, u.premium 
      FROM users u 
      JOIN sessions s ON u.id = s.user_id 
      WHERE s.session_token = $1`,

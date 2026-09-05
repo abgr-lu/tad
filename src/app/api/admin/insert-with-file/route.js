@@ -16,8 +16,8 @@ export async function POST(request) {
     const sector = formData.get('sector'); // Recuperamos el sector
 
     // VALIDACIÓN: Ahora solo el NOMBRE es obligatorio para el backend
-    if (!name || !ticket_1) {
-      return NextResponse.json({ error: "Nombre y Ticker 1 son obligatorios" }, { status: 400 });
+    if (!name) {
+      return NextResponse.json({ error: "Nombre es obligatorio" }, { status: 400 });
     }
 
     let fileName = null;

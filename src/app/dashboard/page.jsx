@@ -2,11 +2,19 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
+const ArrowIcon = () => (
+  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+  </svg>
+);
+
 export default function DashboardHome() {
   const [user, setUser] = useState(null);
-  const [recentSales, setRecentSales] = useState([]);
+  const [latestCompanies, setLatestCompanies] = useState([]);
+  const [latestVesselInfo, setLatestVesselInfo] = useState({ year: null, week: null });
 
   useEffect(() => {
+    // 1. Obtener datos del usuario actual
     fetch('/api/user')
       .then(res => res.json())
       .then(data => {
@@ -14,11 +22,34 @@ export default function DashboardHome() {
         setUser(userData);
       });
 
-    fetch('/api/admin/read?table=vsales')
+    // 2. Obtener los últimos 10 registros de la tabla 'companies'
+    fetch('/api/admin/read?table=companies&limit=200')
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
-          setRecentSales(data.slice(0, 3));
+          // Ordenamos por ID o fecha descendente y tomamos los últimos 10
+          const sorted = data.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+          setLatestCompanies(sorted.slice(0, 10));
+        }
+      });
+
+    // 3. Obtener la fecha más actual (year y week) de la tabla 'vv'
+    fetch('/api/admin/read?table=vv&limit=500')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          // Buscamos el año y semana más altos o recientes
+          // Suponemos que los datos tienen propiedades 'year' y 'week' numéricas
+          const maxRecord = data.reduce((latest, current) => {
+            if (!latest) return current;
+            if (current.year > latest.year) return current;
+            if (current.year === latest.year && (current.week || 0) > (latest.week || 0)) return current;
+            return latest;
+          }, null);
+
+          if (maxRecord) {
+            setLatestVesselInfo({ year: maxRecord.year, week: maxRecord.week });
+          }
         }
       });
   }, []);
@@ -26,105 +57,97 @@ export default function DashboardHome() {
   return (
     <div className="space-y-8 max-w-5xl mx-auto animate-fade-in">
       
-      {/* HEADER DE BIENVENIDA */}
-      <header className="bg-white dark:bg-gradient-to-br dark:from-slate-900 dark:to-slate-950 border border-slate-200 dark:border-slate-800/80 rounded-2xl p-10 relative overflow-hidden shadow-sm dark:shadow-2xl transition-colors duration-200">
-        <div className="absolute top-0 right-0 p-8 text-7xl opacity-[0.03] dark:opacity-10 pointer-events-none select-none font-black italic uppercase tracking-tighter text-slate-900 dark:text-white">
-          AEGIS
+      {/* HEADER CORPORATIVO */}
+      <header className="bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-slate-800 rounded-xl p-10 relative overflow-hidden shadow-sm">
+        <div className="absolute -top-6 -right-6 text-[120px] opacity-[0.02] dark:opacity-5 pointer-events-none select-none font-black italic tracking-tighter text-slate-900 dark:text-white leading-none">
+          OURIOS
         </div>
-        <h1 className="text-3xl md:text-4xl font-[900] tracking-tighter text-slate-900 dark:text-white uppercase italic">
-          Welcome back, <span className="text-blue-600 dark:text-blue-500 not-italic">{user?.name || 'User'}</span>! 👋
+        
+        <h1 className="text-3xl font-[900] tracking-tighter text-slate-900 dark:text-white uppercase italic relative z-10">
+          Overview
         </h1>
-        <p className="mt-3 text-sm text-slate-500 dark:text-slate-400 font-bold tracking-tight max-w-2xl leading-relaxed">
-          This is your operational summary on the Aegis Analytics terminal. Monitor global fleet datasets, real-time algorithmic valuation shifts, and recent market transactions.
+        <p className="mt-3 text-sm text-slate-500 dark:text-slate-400 font-medium tracking-wide max-w-2xl leading-relaxed relative z-10">
+          Welcome, <span className="font-bold text-slate-700 dark:text-slate-300">{user?.name || 'Analyst'}</span>
         </p>
       </header>
 
-      {/* SECCIÓN: ACCESOS RÁPIDOS */}
+      {/* SECCIÓN: ACCESOS RÁPIDOS Y DATOS DINÁMICOS */}
       <div>
-        <h3 className="text-xs font-black tracking-[0.2em] text-slate-400 dark:text-slate-500 uppercase mb-4">
-          🚀 System Modules
+        <h3 className="text-[10px] font-bold tracking-[0.2em] text-slate-500 dark:text-slate-400 uppercase mb-4 pl-1">
+          Last updates
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <QuickLink href="/dashboard/companies" title="Companies" desc="Corporate structures, directories, and fleet owners." icon="🏢" borderClass="border-t-blue-500" />
-          <QuickLink href="/dashboard/vvalues" title="V-Values" desc="Automated and dynamic market asset valuations." icon="📊" borderClass="border-t-emerald-500" />
-          <QuickLink href="/dashboard/vsales" title="V-Sales" desc="Recent market transactions and deals." icon="🚢" borderClass="border-t-amber-500" />
-        </div>
-      </div>
-
-      {/* SECCIÓN: ÚLTIMAS VENTAS */}
-      <div>
-        <h3 className="text-xs font-black tracking-[0.2em] text-slate-400 dark:text-slate-500 uppercase mb-4">
-          ⚓ Latest Market Sales
-        </h3>
-        <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/60 rounded-2xl overflow-hidden shadow-sm backdrop-blur-md transition-colors duration-200">
-          {recentSales.length > 0 ? (
-            <div className="divide-y divide-slate-200 dark:divide-slate-800/60">
-              {recentSales.map((sale) => (
-                <div 
-                  key={sale.id} 
-                  className="p-4 px-6 flex justify-between items-center hover:bg-slate-50 dark:hover:bg-slate-900/60 transition-colors duration-150 group"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-slate-400 dark:text-slate-500 font-bold group-hover:text-blue-500 transition-colors">➔</span>
-                    <div>
-                      <span className="font-black text-sm text-slate-800 dark:text-white tracking-tight">{sale.name}</span>
-                      <span className="text-[11px] text-slate-400 dark:text-slate-500 font-bold tracking-wider uppercase ml-2">
-                        {sale.type}
-                      </span>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          {/* Tarjeta de Companies con listado de los últimos 10 */}
+          <QuickLinkContainer href="/dashboard/companies" title="Companies" arrow={<ArrowIcon />}>
+            {latestCompanies.length > 0 ? (
+              <div className="space-y-2 mt-2 max-h-60 overflow-y-auto pr-1">
+                {latestCompanies.map((comp) => (
+                  <div key={comp.id} className="flex items-center justify-between text-xs py-1.5 border-b border-slate-100 dark:border-slate-800/60 font-mono">
+                    <div className="flex items-center gap-2 truncate">
+                      <span className="font-bold text-slate-900 dark:text-white truncate">{comp.name}</span>
+                      <span className="text-[10px] text-blue-600 dark:text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded font-bold">{comp.ticket_1 || '-'}</span>
                     </div>
+                    <span className="text-[10px] text-slate-400 shrink-0 ml-2">
+                      {comp.created_at ? new Date(comp.created_at).toLocaleDateString() : ''}
+                    </span>
                   </div>
-                  <div className="font-mono text-xs font-black text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-md border border-emerald-500/20">
-                    ${sale.price}M
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-slate-400 mt-2 font-medium">Loading latest corporate records...</p>
+            )}
+          </QuickLinkContainer>
+
+          {/* Tarjeta de Vessel Valuations con la semana y año actual */}
+          <QuickLinkContainer href="/dashboard/vvalues" title="Vessel Valuations" arrow={<ArrowIcon />}>
+            <div className="mt-4">
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Latest valuation horizon recorded in database:</p>
+              <div className="mt-3 inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 px-3 py-2 rounded-xl text-blue-600 dark:text-blue-400 font-mono font-bold text-xs">
+                <span>Week {latestVesselInfo.week || '--'}, Year {latestVesselInfo.year || '----'}</span>
+              </div>
             </div>
-          ) : (
-            <div className="p-6 text-center">
-              <span className="inline-block animate-spin rounded-full h-4 w-4 border border-slate-400 dark:border-slate-500 border-t-transparent mr-2 align-middle" />
-              <span className="text-xs text-slate-400 dark:text-slate-500 font-mono tracking-wider uppercase">
-                Synchronizing live fleet transactions...
-              </span>
-            </div>
-          )}
+          </QuickLinkContainer>
+
         </div>
       </div>
 
       {/* FOOTER / PANEL DE ESTADO */}
-      <footer className="bg-white dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800/50 rounded-2xl p-5 flex flex-col sm:flex-row gap-4 justify-between items-center text-xs shadow-sm transition-colors duration-200">
-        <div className="flex items-center gap-2.5 font-bold text-slate-500 dark:text-slate-400 tracking-tight">
-          <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span>Account Status:</span>
-          <span className="text-slate-800 dark:text-white font-black bg-slate-100 dark:bg-slate-800/60 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-800/40">
-            {user?.super ? 'Administrator' : 'Premium Subscription'} ✅
+      <footer className="bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-slate-800 rounded-xl p-6 flex flex-col sm:flex-row gap-4 justify-between items-center text-xs shadow-sm">
+        <div className="flex items-center gap-3 font-medium text-slate-500 dark:text-slate-400">
+          <span className="relative flex h-2.5 w-2.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500"></span>
           </span>
+          <span className="uppercase tracking-widest text-[10px] font-bold">Network Status: <span className="text-slate-800 dark:text-slate-200">Secure</span></span>
         </div>
-        <Link 
-          href="/dashboard/profile" 
-          className="text-blue-600 dark:text-blue-400 font-black tracking-wider uppercase text-[11px] hover:text-blue-800 dark:hover:text-white transition-colors flex items-center gap-1 group"
-        >
-          Manage Profile <span className="transform group-hover:translate-x-1 transition-transform">→</span>
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link 
+            href="/dashboard/profile" 
+            className="text-blue-600 dark:text-blue-500 font-bold tracking-widest uppercase text-[10px] hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
+          >
+            Manage Account
+          </Link>
+        </div>
       </footer>
 
     </div>
   );
 }
 
-function QuickLink({ href, title, desc, icon, borderClass }) {
+// Componente contenedor auxiliar para mantener la estética de las tarjetas de acceso rápido
+function QuickLinkContainer({ href, title, children, arrow }) {
   return (
     <Link href={href} className="group block h-full">
-      <div className={`bg-white dark:bg-slate-900/50 hover:bg-slate-50 dark:hover:bg-slate-900 border border-slate-200 dark:border-slate-800/80 p-6 rounded-2xl shadow-sm transition-all duration-200 h-full flex flex-col justify-between border-t-4 ${borderClass}`}>
+      <div className="bg-white dark:bg-[#0F172A] hover:bg-slate-50 dark:hover:bg-slate-800/80 border border-slate-200 dark:border-slate-800 p-6 rounded-xl transition-all duration-200 h-full flex flex-col justify-between shadow-sm hover:shadow-md">
         <div>
-          <div className="text-2xl mb-3 p-2 bg-slate-100 dark:bg-slate-950/60 w-fit rounded-xl border border-slate-200 dark:border-slate-800/60 group-hover:bg-white dark:group-hover:bg-slate-950 transition-colors">
-            {icon}
-          </div>
-          <h4 className="text-slate-900 dark:text-white font-black text-base tracking-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+          <h4 className="text-slate-900 dark:text-white font-bold text-sm tracking-wide group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors uppercase">
             {title}
           </h4>
-          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1 leading-relaxed">
-            {desc}
-          </p>
+          {children}
+        </div>
+        <div className="mt-6 flex justify-end text-slate-300 dark:text-slate-600 group-hover:text-blue-600 dark:group-hover:text-blue-500 transition-colors">
+          {arrow}
         </div>
       </div>
     </Link>
