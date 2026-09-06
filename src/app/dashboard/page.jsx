@@ -113,15 +113,28 @@ export default function DashboardHome() {
       </div>
 
       {/* FOOTER / PANEL DE ESTADO */}
-      <footer className="bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-slate-800 rounded-xl p-6 flex flex-col sm:flex-row gap-4 justify-between items-center text-xs shadow-sm">
-        <div className="flex items-center gap-3 font-medium text-slate-500 dark:text-slate-400">
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500"></span>
-          </span>
-          <span className="uppercase tracking-widest text-[10px] font-bold">Network Status: <span className="text-slate-800 dark:text-slate-200">Secure</span></span>
+      <footer className="bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-slate-800 rounded-xl p-6 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center text-xs shadow-sm">
+        
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-3 font-medium text-slate-500 dark:text-slate-400">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500"></span>
+            </span>
+            <span className="uppercase tracking-widest text-[10px] font-bold">Network Status: <span className="text-slate-800 dark:text-slate-200">Secure</span></span>
+          </div>
+          
+          {/* NUEVO: Fecha de expiración de la cuenta con formato de botón verde */}
+          {user?.subscription_ends_at && (
+            <div className="pl-[22px]">
+              <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-lg text-emerald-600 dark:text-emerald-400 font-mono font-bold text-[10px] uppercase tracking-widest">
+                Account Expiration: {new Date(user.subscription_ends_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+              </div>
+            </div>
+          )}
         </div>
-        <div className="flex items-center gap-4">
+
+        <div className="flex items-center gap-4 mt-2 sm:mt-0">
           <Link 
             href="/dashboard/profile" 
             className="text-blue-600 dark:text-blue-500 font-bold tracking-widest uppercase text-[10px] hover:text-blue-800 dark:hover:text-blue-300 transition-colors"

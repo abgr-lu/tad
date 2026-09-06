@@ -90,9 +90,6 @@ export default function ProfilePage() {
         <h1 className="text-2xl font-[900] tracking-tighter text-slate-900 dark:text-white uppercase italic">
           Account Settings
         </h1>
-        <p className="mt-2 text-xs font-bold text-slate-400 dark:text-slate-500 tracking-wide">
-          Manage your identity credentials, profile visual nodes, and security layer parameters.
-        </p>
       </header>
 
       {/* SECTION 1: IDENTITY CREDENTIALS & AVATAR MATRIX */}
@@ -174,7 +171,7 @@ export default function ProfilePage() {
           
           <div>
             <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1.5">
-              New Password Mutation
+              New Password
             </label>
             <input 
               type="password" 
@@ -187,7 +184,7 @@ export default function ProfilePage() {
           
           <div>
             <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1.5">
-              Confirm New Password Mutation
+              Confirm New Password
             </label>
             <input 
               type="password" 
@@ -202,7 +199,7 @@ export default function ProfilePage() {
             type="submit" 
             className="w-full mt-2 py-3.5 bg-red-600 hover:bg-red-700 text-white text-xs font-black tracking-widest uppercase rounded-xl transition-all shadow-sm cursor-pointer"
           >
-            Mutate Access Password
+            Change Password
           </button>
         </form>
       </div>

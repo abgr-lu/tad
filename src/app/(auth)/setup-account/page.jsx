@@ -36,10 +36,10 @@ function SetupAccountForm() {
     const data = await res.json();
 
     if (res.ok) {
-      setStatus({ type: 'success', message: '¡Cuenta creada con éxito! Llevándote al Sign In...' });
+      setStatus({ type: 'success', message: 'Account successfully created! Taking you to Sign In...' });
       setTimeout(() => router.push('/signin'), 3000);
     } else {
-      setStatus({ type: 'error', message: data.error || 'Error al procesar la solicitud.' });
+      setStatus({ type: 'error', message: data.error || 'Error processing the request.' });
     }
   };
 
@@ -98,12 +98,18 @@ function SetupAccountForm() {
             />
           </div>
 
+          {/* BOTÓN ACTUALIZADO CON ESTADO "PROCESSING..." Y "REDIRECTING..." */}
           <button 
             type="submit" 
-            disabled={status.type === 'loading'}
+            disabled={status.type === 'loading' || status.type === 'success'}
             className="w-full mt-6 py-4 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-600 text-white text-xs font-black tracking-widest uppercase rounded-xl transition-all shadow-xl shadow-blue-600/10 active:scale-[0.98] cursor-pointer"
           >
-            Create Account
+            {status.type === 'loading' 
+              ? 'Processing...' 
+              : status.type === 'success' 
+                ? 'Redirecting...' 
+                : 'Create Account'
+            }
           </button>
         </form>
       )}
