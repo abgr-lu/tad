@@ -102,7 +102,7 @@ function SignInForm() {
           type="submit" 
           className="w-full mt-6 py-4 bg-blue-600 hover:bg-blue-500 text-white text-xs font-black tracking-widest uppercase rounded-xl transition-all shadow-xl shadow-blue-600/10 active:scale-[0.98] cursor-pointer"
         >
-          Authorize Entry
+          Sign in
         </button>
       </form>
 
