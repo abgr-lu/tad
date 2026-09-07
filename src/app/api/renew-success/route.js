@@ -8,21 +8,27 @@ import { Resend } from 'resend';
 export const dynamic = 'force-dynamic';
 
 export async function GET(req) {
+  // 2. Construcción de la URL de retorno fija y segura hacia el Dashboard
+  // Evitamos new URL(..., req.url) para que Railway no intente redirigir a localhost:8080
+  let baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://ouriosanalytics.com';
+  baseUrl = baseUrl.replace(/\/$/, ''); // Eliminamos la barra final si existe
+  const dashboardUrl = `${baseUrl}/dashboard`;
+
   const { searchParams } = new URL(req.url);
   const sessionId = searchParams.get('session_id');
 
-  // Si no hay sesión, redirigimos al dashboard inmediatamente
+  // Si no hay sesión, redirigimos al dashboard público inmediatamente
   if (!sessionId) {
-    return NextResponse.redirect(new URL('/dashboard', req.url));
+    return NextResponse.redirect(dashboardUrl);
   }
 
-  // 2. Inicialización segura en tiempo de ejecución
+  // 3. Inicialización segura en tiempo de ejecución
   const stripeKey = process.env.STRIPE_SECRET_KEY;
   const resendKey = process.env.RESEND_API_KEY;
 
   if (!stripeKey) {
     console.error('⚠️ STRIPE_SECRET_KEY no está definida en las variables de entorno.');
-    return NextResponse.redirect(new URL('/dashboard', req.url));
+    return NextResponse.redirect(dashboardUrl);
   }
 
   const stripe = new Stripe(stripeKey);
@@ -32,17 +38,17 @@ export async function GET(req) {
     const session = await stripe.checkout.sessions.retrieve(sessionId, { expand: ['line_items'] });
     
     if (session.payment_status !== 'paid') {
-      return NextResponse.redirect(new URL('/dashboard', req.url));
+      return NextResponse.redirect(dashboardUrl);
     }
 
     const email = session.customer_details?.email;
     if (!email) {
-      return NextResponse.redirect(new URL('/dashboard', req.url));
+      return NextResponse.redirect(dashboardUrl);
     }
 
     const priceId = session.line_items?.data[0]?.price?.id;
 
-    // Calculamos la nueva fecha de suscripción
+    // 4. Calculamos la nueva fecha de suscripción
     const now = new Date();
     let endsAt = new Date();
     
@@ -52,13 +58,13 @@ export async function GET(req) {
       endsAt.setMonth(now.getMonth() + 1);
     }
 
-    // Actualizamos la base de datos
+    // 5. Actualizamos la base de datos PostgreSQL
     await db(
       'UPDATE users SET premium = true, subscription_ends_at = $1 WHERE email = $2',
       [endsAt.toISOString(), email]
     );
 
-    // Enviamos el correo de confirmación si Resend está configurado
+    // 6. Enviamos el correo de confirmación si Resend está configurado
     if (resend) {
       try {
         const { data, error } = await resend.emails.send({
@@ -88,10 +94,11 @@ export async function GET(req) {
       console.warn('⚠️ RESEND_API_KEY no configurada. Omitiendo envío de correo.');
     }
 
-    return NextResponse.redirect(new URL('/dashboard', req.url));
+    // 7. Redirección final al Dashboard en el dominio público
+    return NextResponse.redirect(dashboardUrl);
 
   } catch (error) {
     console.error('Error procesando la renovación en Stripe/DB:', error);
-    return NextResponse.redirect(new URL('/dashboard', req.url));
+    return NextResponse.redirect(dashboardUrl);
   }
 }
