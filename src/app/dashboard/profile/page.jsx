@@ -1,49 +1,127 @@
 "use client";
 import { useEffect, useState } from 'react';
 
-// Iconos SVG profesionales integrados para sustituir elementos informales
+// Iconos SVG profesionales
 const Icons = {
-  User: () => <svg className="w-8 h-8 text-slate-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>,
-  Shield: () => <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>
+  User: () => (
+    <svg className="w-8 h-8 text-slate-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+    </svg>
+  ),
+  Shield: () => (
+    <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+    </svg>
+  )
 };
+
+/**
+ * Función auxiliar para redimensionar la imagen a un avatar ligero (256x256 max)
+ * evitando sobrecargar la base de datos con archivos pesados.
+ */
+function resizeImage(file, maxWidth = 256, maxHeight = 256) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob((blob) => {
+          resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+        }, 'image/jpeg', 0.85); // Calidad 85%
+      };
+    };
+  });
+}
 
 export default function ProfilePage() {
   const [user, setUser] = useState({ name: '', country: '', image: '' });
   const [passwords, setPasswords] = useState({ current: '', new: '', confirm: '' });
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    fetch('/api/user').then(res => res.json()).then(data => {
-      const userData = Array.isArray(data) ? data[0] : data;
-      setUser({ name: userData?.name || '', country: userData?.country || '', image: userData?.image || '' });
-      setLoading(false);
-    });
+    fetch('/api/user')
+      .then((res) => res.json())
+      .then((data) => {
+        const userData = Array.isArray(data) ? data[0] : data;
+        setUser({
+          name: userData?.name || '',
+          country: userData?.country || '',
+          image: userData?.image || ''
+        });
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error loading user profile:", err);
+        setLoading(false);
+      });
   }, []);
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    if (file.size > 4 * 1024 * 1024) {
-      alert("⚠️ File exceeds size ceiling. Maximum allowed capacity is 4MB.");
-      return;
-    }
+    try {
+      setUploading(true);
 
-    const formData = new FormData();
-    formData.append('file', file);
+      // Redimensionamos la imagen en el navegador del cliente antes de enviarla
+      const optimizedFile = await resizeImage(file);
 
-    const res = await fetch('/api/user/upload', { method: 'POST', body: formData });
-    if (res.ok) {
-      const { imageUrl } = await res.json();
-      setUser({ ...user, image: imageUrl });
-      alert("✅ Profile image updated successfully.");
-      window.location.reload(); 
+      const formData = new FormData();
+      formData.append('file', optimizedFile);
+
+      const res = await fetch('/api/user/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (res.ok) {
+        const { imageUrl } = await res.json();
+        setUser((prev) => ({ ...prev, image: imageUrl }));
+        alert("✅ Profile image updated successfully.");
+        window.location.reload();
+      } else {
+        const errData = await res.json().catch(() => null);
+        alert(`❌ Upload Error: ${errData?.error || 'Unable to update avatar'}`);
+      }
+    } catch (err) {
+      console.error("Error during file upload:", err);
+      alert("❌ An unexpected error occurred while processing the image.");
+    } finally {
+      setUploading(false);
     }
   };
 
   const handleUpdateInfo = async (e) => {
     e.preventDefault();
-    const res = await fetch('/api/user/update', { method: 'PUT', body: JSON.stringify(user) });
+    const res = await fetch('/api/user/update', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(user)
+    });
     if (res.ok) {
       alert("✅ Profile records updated successfully.");
       window.location.reload();
@@ -66,8 +144,8 @@ export default function ProfilePage() {
       alert("✅ Security credentials mutated successfully.");
       setPasswords({ current: '', new: '', confirm: '' });
     } else {
-      const error = await res.json();
-      alert(`❌ Security Rejection: ${error.error}`);
+      const error = await res.json().catch(() => ({}));
+      alert(`❌ Security Rejection: ${error.error || 'Failed to change password'}`);
     }
   };
 
@@ -99,18 +177,24 @@ export default function ProfilePage() {
         <div className="flex flex-col items-center text-center pb-6 border-b border-slate-100 dark:border-slate-800 mb-6">
           <div className="w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-900 border-2 border-blue-500/30 overflow-hidden shadow-inner flex items-center justify-center relative">
             {user.image ? (
-              <img src={user.image} alt="Profile node" className="w-full h-full object-cover" />
+              <img src={user.image} alt="Profile avatar" className="w-full h-full object-cover" />
             ) : (
               <Icons.User />
             )}
           </div>
           
           <label className="mt-4 text-xs font-black tracking-wider uppercase text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 cursor-pointer transition-colors">
-            Upload New Photo
-            <input type="file" hidden onChange={handleFileUpload} accept="image/*" />
+            {uploading ? 'Processing Image...' : 'Upload New Photo'}
+            <input 
+              type="file" 
+              hidden 
+              disabled={uploading}
+              onChange={handleFileUpload} 
+              accept="image/png, image/jpeg, image/webp" 
+            />
           </label>
           <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono mt-1 uppercase tracking-wider">
-            Max Capacity: 4MB (JPG, PNG)
+            Optimized automatically for high performance
           </span>
         </div>
 
