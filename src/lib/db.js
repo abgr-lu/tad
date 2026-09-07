@@ -1,28 +1,39 @@
 import { Pool } from 'pg';
 
-// Comprobamos si estamos en el entorno de producción de Railway
+// 1. Verificación y diagnóstico de la variable de entorno
+const connectionString = process.env.DATABASE_URL || process.env.DATABASE_PRIVATE_URL;
+
+if (!connectionString) {
+  console.error("❌ CRITICAL DATABASE ERROR: Neither DATABASE_URL nor DATABASE_PRIVATE_URL is defined.");
+  console.error("Variables de entorno disponibles en este entorno:", Object.keys(process.env).filter(k => !k.includes('SECRET') && !k.includes('KEY')));
+}
+
+// 2. Determinación del entorno de ejecución
 const isProduction = process.env.NODE_ENV === 'production';
 
-// Creamos la instancia del grupo de conexiones (Pool)
+// 3. Creación del pool con configuración explícita
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  // Railway requiere SSL activo en producción para conectar a PostgreSQL
+  connectionString: connectionString,
+  // Forzar SSL en entornos en la nube como Railway
   ssl: isProduction
     ? {
-        rejectUnauthorized: false, // Permite certificados emitidos por la infraestructura de Railway
+        rejectUnauthorized: false,
       }
-    : false, // En desarrollo local se desactiva si no se usa SSL
+    : false,
 });
 
-// Captura errores inesperados en clientes inactivos del pool
 pool.on('error', (err) => {
-  console.error('Error inesperado en el cliente de PostgreSQL:', err);
+  console.error('Unexpected error on idle PostgreSQL client:', err);
 });
 
 /**
- * Función centralizada para ejecutar consultas SQL.
- * @param {string} text - Consulta SQL parametrizada.
- * @param {Array} params - Valores para los parámetros $1, $2, etc.
- * @returns {Promise<object>} Resultado de la consulta.
+ * Ejecuta una consulta SQL en el pool.
+ * @param {string} text - Sentencia SQL parametrizada.
+ * @param {Array} params - Parámetros de la consulta.
  */
-export const query = (text, params) => pool.query(text, params);
+export async function query(text, params) {
+  if (!connectionString) {
+    throw new Error("No database connection string defined in environment variables.");
+  }
+  return pool.query(text, params);
+}
