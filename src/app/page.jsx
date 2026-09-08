@@ -111,21 +111,31 @@ export default function LandingPage() {
         </div>
 
         {/* NAVEGACIÓN Y LOGOTIPO CON EFECTO DE LÍNEAS MARÍTIMAS */}
-        <nav className="relative z-50 flex justify-between items-center px-10 py-8">
-          <div className="flex flex-col">
-            <span className="text-4xl md:text-5xl font-black tracking-tighter text-white uppercase italic">Ourios</span>
-            {/* Líneas horizontales tenues simulando las olas del mar */}
-            <div className="flex flex-col gap-1 mt-1 opacity-70">
-              <div className="h-[2px] w-full bg-gradient-to-r from-blue-500 via-sky-400 to-transparent rounded-full" />
-              <div className="h-[1px] w-4/5 bg-gradient-to-r from-blue-400/50 to-transparent rounded-full" />
-            </div>
-          </div>
-          <div className="flex items-center gap-6">
-            <Link href="/signin" className="mt-12 w-full bg-blue-600 text-white py-3 px-3 rounded-2xl font-black text-xs tracking-[0.2em] hover:bg-blue-400 transition-all shadow-lg shadow-blue-600/40 uppercase cursor-pointer">SIGN IN</Link>
-          </div>
-        </nav>
+<nav className="relative z-50 flex justify-between items-center px-6 md:px-10 py-6">
+  {/* BLOQUE IZQUIERDO: LOGO Y LÍNEAS */}
+  <div className="flex flex-col">
+    <span className="text-4xl md:text-5xl font-black tracking-tighter text-white uppercase italic leading-none">
+      Ourios
+    </span>
+    {/* Líneas horizontales tenues simulando las olas del mar */}
+    <div className="flex flex-col gap-1 mt-1 opacity-70">
+      <div className="h-[2px] w-full bg-gradient-to-r from-blue-500 via-sky-400 to-transparent rounded-full" />
+      <div className="h-[1px] w-4/5 bg-gradient-to-r from-blue-400/50 to-transparent rounded-full" />
+    </div>
+  </div>
 
-        <div className="relative z-10 flex flex-col items-center justify-center pt-20 px-4">
+  {/* BLOQUE DERECHO: BOTÓN SIGN IN ALINEADO */}
+  <div className="flex items-center">
+    <Link 
+      href="/signin" 
+      className="inline-flex items-center justify-center bg-blue-600 text-white px-6 py-2.5 rounded-2xl font-black text-xs tracking-[0.2em] hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/30 uppercase cursor-pointer"
+    >
+      SIGN IN
+    </Link>
+  </div>
+</nav>
+
+        <div className="relative z-10 flex flex-col items-center justify-center pt-10 px-4">
           
           <div className="text-center max-w-6xl">
             <h1 className="text-4xl md:text-5xl font-[900] text-white leading-[0.9] tracking-tighter uppercase italic">
