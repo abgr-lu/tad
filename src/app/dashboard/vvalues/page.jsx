@@ -112,16 +112,16 @@ export default function VValuesDashboard() {
                     </td>
                     
                     {/* VALUATION HORIZONS */}
-                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">${item.nb}</td>
-                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">${item.resale}</td>
-                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">${item["5"]}</td>
-                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">${item["10"]}</td>
-                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">${item["15"]}</td>
-                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">${item["20"]}</td>
+                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">{item.nb}</td>
+                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">{item.resale}</td>
+                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">{item["5"]}</td>
+                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">{item["10"]}</td>
+                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">{item["15"]}</td>
+                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">{item["20"]}</td>
                     
                     {/* SCRAP VALUE (Highlighted subtly with a soft slate accent badge) */}
                     <td className="py-3.5 px-4 font-black text-slate-500 dark:text-slate-400">
-                      ${item.scrap}
+                      {item.scrap}
                     </td>
                   </tr>
                 ))
