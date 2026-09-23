@@ -90,7 +90,8 @@ export default function VValuesDashboard() {
             <thead>
               <tr className="bg-slate-50 dark:bg-slate-950/40 border-b border-slate-200 dark:border-slate-800/60 text-[10px] font-black tracking-[0.15em] text-slate-400 dark:text-slate-500 uppercase">
                 <th className="py-4 px-6">Vessel Type</th>
-                <th className="py-4 px-4">New Building</th>
+                <th className="py-4 px-4">NB</th>
+                <th className="py-4 px-4">Resale</th>
                 <th className="py-4 px-4">5 Years</th>
                 <th className="py-4 px-4">10 Years</th>
                 <th className="py-4 px-4">15 Years</th>
@@ -112,6 +113,7 @@ export default function VValuesDashboard() {
                     
                     {/* VALUATION HORIZONS */}
                     <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">${item.nb}</td>
+                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">${item.resale}</td>
                     <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">${item["5"]}</td>
                     <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">${item["10"]}</td>
                     <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">${item["15"]}</td>

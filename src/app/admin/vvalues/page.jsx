@@ -52,7 +52,8 @@ export default function AdminVValuesPage() {
             "20": cleanNum(r["20"]),
             scrap: cleanNum(r.scrap),
             year: parseInt(r.year),
-            week: parseInt(r.week)
+            week: parseInt(r.week),
+            resale: cleanNum(r.resale)
           }));
 
         const res = await fetch("/api/admin/bulk-insert", {
@@ -92,7 +93,7 @@ export default function AdminVValuesPage() {
         <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '1200px' }}>
           <thead style={{ background: COLORS.primary, color: 'white' }}>
             <tr>
-              {["Sector", "Type", "NB", "5y", "10y", "15y", "20y", "Scrap", "Year", "Week", "Action"].map(h => (
+              {["Sector", "Type", "NB", "RESALE", "5y", "10y", "15y", "20y", "Scrap", "Year", "Week", "Action"].map(h => (
                 <th key={h} style={thStyle}>{h}</th>
               ))}
             </tr>
@@ -103,6 +104,7 @@ export default function AdminVValuesPage() {
                 <td style={tdStyle}>{item.sector}</td>
                 <td style={{ ...tdStyle, fontWeight: 'bold' }}>{item.type}</td>
                 <td style={tdStyle}>{item.nb}</td>
+                <td style={tdStyle}>{item.resale}</td>
                 <td style={tdStyle}>{item["5"]}</td>
                 <td style={tdStyle}>{item["10"]}</td>
                 <td style={tdStyle}>{item["15"]}</td>

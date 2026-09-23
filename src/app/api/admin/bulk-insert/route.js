@@ -38,10 +38,10 @@ export async function POST(request) {
       placeholdersPerRow = 9;
     } 
     else if (table === "vv") {
-      columns = 'sector, type, nb, "5", "10", "15", "20", scrap, year, week';
+      columns = 'sector, type, nb, "5", "10", "15", "20", scrap, year, week, resale';
       conflictTarget = "(type, year, week)";
-      updateSet = 'nb=EXCLUDED.nb, "5"=EXCLUDED."5", "10"=EXCLUDED."10", "15"=EXCLUDED."15", "20"=EXCLUDED."20", scrap=EXCLUDED.scrap, sector=EXCLUDED.sector';
-      placeholdersPerRow = 10;
+      updateSet = 'nb=EXCLUDED.nb, "5"=EXCLUDED."5", "10"=EXCLUDED."10", "15"=EXCLUDED."15", "20"=EXCLUDED."20", scrap=EXCLUDED.scrap, sector=EXCLUDED.sector, resale=EXCLUDED.resale';
+      placeholdersPerRow = 11;
     }
     else if (table === "ob") {
       columns = 'sector, type, "2025", "2026", "2027", "2028", beyond';
@@ -65,7 +65,7 @@ export async function POST(request) {
       if (table === "shorts") {
         values.push(item.company, item.symbol, item.market, item.current_short, item.previous_short, item.outstanding, item.float, item.av_vol, item.date);
       } else if (table === "vv") {
-        values.push(item.sector, item.type, item.nb, item["5"], item["10"], item["15"], item["20"], item.scrap, item.year, item.week);
+        values.push(item.sector, item.type, item.nb, item["5"], item["10"], item["15"], item["20"], item.scrap, item.year, item.week, item.resale);
       } else if (table === "ob") {
         values.push(item.sector, item.type, item["2025"], item["2026"], item["2027"], item["2028"], item.beyond);
       } else if (table === "vsales") {
