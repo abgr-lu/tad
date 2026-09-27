@@ -176,7 +176,7 @@ export default function LandingPage() {
               <div className="mt-4 text-center">
                 <button 
                   onClick={() => setIsDetailsModalOpen(true)}
-                  className="text-xs font-bold text-blue-600 hover:text-blue-300 uppercase tracking-widest underline decoration-blue-500/40 underline-offset-4 transition-colors cursor-pointer"
+                  className="text-xs font-bold text-blue-300 hover:text-blue-300 uppercase tracking-widest underline decoration-blue-500/40 underline-offset-4 transition-colors cursor-pointer"
                 >
                   More Details →
                 </button>
