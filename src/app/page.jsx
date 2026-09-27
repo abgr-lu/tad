@@ -140,7 +140,7 @@ export default function LandingPage() {
           <div className="text-center max-w-6xl">
             <h1 className="text-4xl md:text-5xl font-[900] text-white leading-[0.9] tracking-tighter uppercase italic">
               ANALYTICS FOR SHIPPING INVESTORS <br/>
-              <p><span className="text-blue-400">TANKERS & DRYBULK</span></p>
+              <p><span className="text-blue-400">TANKER & DRYBULK</span></p>
               <span className="text-white">SECTORS</span>
             </h1>
             <p className="mt-6 text-xl md:text-2xl text-white/60 font-bold tracking-[0.2em] uppercase">
@@ -165,7 +165,7 @@ export default function LandingPage() {
               </div>
 
               <div className="mt-10 space-y-5">
-                {['22 Excel models covering all the most popular companies', '2 master files with valuations (NAV, PER, EV/EBITDA, dividend yield)', 'Vessels Values', 'Order Book'].map((i) => (
+                {['22 Excel models covering all the most popular companies', 'A Master with valuations (NAV, PER, EV/EBITDA, dividend yield)', 'Vessels Values'].map((i) => (
                   <div key={i} className="flex items-center gap-3 text-white/70 font-semibold text-sm border-b border-white/5 pb-3 italic">
                     <div className="w-1.5 h-1.5 bg-blue-500 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]" /> {i}
                   </div>
@@ -176,7 +176,7 @@ export default function LandingPage() {
               <div className="mt-4 text-center">
                 <button 
                   onClick={() => setIsDetailsModalOpen(true)}
-                  className="text-xs font-bold text-blue-400 hover:text-blue-300 uppercase tracking-widest underline decoration-blue-500/40 underline-offset-4 transition-colors cursor-pointer"
+                  className="text-xs font-bold text-blue-600 hover:text-blue-300 uppercase tracking-widest underline decoration-blue-500/40 underline-offset-4 transition-colors cursor-pointer"
                 >
                   More Details →
                 </button>
@@ -329,7 +329,7 @@ export default function LandingPage() {
 
               <div className="space-y-4 text-xs font-medium text-slate-300 leading-relaxed mb-8">
                 <span className="text-3xl font-black tracking-tighter text-white uppercase italic">Ourios</span>
-                {/* Líneas horizontales tenues simulando las olas del mar */}
+                {/* Línea horizontal tenue */}
                 <div className="flex flex-col gap-1 mt-1 opacity-70 mb-4">
                   <div className="h-[2px] w-32 bg-gradient-to-r from-blue-500 via-sky-400 to-transparent rounded-full" />
                   <div className="h-[1px] w-24 bg-gradient-to-r from-blue-400/50 to-transparent rounded-full" />
@@ -344,7 +344,7 @@ export default function LandingPage() {
                   <h4 className="text-sm font-black text-white uppercase tracking-wider mb-3">Enjoy:</h4>
                   <ul className="list-disc list-inside space-y-2 text-slate-300 mb-6">
                     <li>Vessels Valuations daily updated</li>
-                    <li>2 Master models: you just need to keep these 2 models open to see and summarize all the main info you need to know to see if it's or not a good moment to invest.</li>
+                    <li>Master model: you just need to keep the Master open to see and summarize all the main info you need to know to see if it's or not a good moment to invest.</li>
                   </ul>
 
                   <h4 className="text-sm font-black text-white uppercase tracking-wider mb-3">Models of:</h4>
