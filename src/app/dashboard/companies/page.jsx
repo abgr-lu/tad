@@ -5,6 +5,7 @@ import Link from "next/link";
 export default function CompaniesDashboard() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [downloadingFile, setDownloadingFile] = useState(null);
   const [activeSector, setActiveSector] = useState("Tankers");
 
   const sectors = ["Tankers", "DB", "Master"];
@@ -53,18 +54,37 @@ export default function CompaniesDashboard() {
     }
   };
 
-  // 2. DESCARGA SEGURA DE ARCHIVOS (BLOB)
+  // 2. DESCARGA SEGURA DE ARCHIVOS (BLOB) CON VERIFICACIÓN DE SUSCRIPCIÓN
   const handleDownload = async (filename) => {
+    if (!filename) return;
+
     try {
+      setDownloadingFile(filename);
+
       const res = await fetch(`/api/download/${encodeURIComponent(filename)}`);
       
+      // Si el servidor detecta que la suscripción caducó o no hay sesión
       if (!res.ok) {
-        const errorText = await res.text();
-        console.error("Server Response:", errorText);
-        alert(`Error ${res.status}: ${errorText || 'File not found'}`);
+        let errorMessage = "Unable to download file.";
+        try {
+          const errorJson = await res.json();
+          errorMessage = errorJson.error || errorMessage;
+        } catch {
+          const errorText = await res.text();
+          if (errorText) errorMessage = errorText;
+        }
+
+        if (res.status === 403) {
+          alert(`⚠️ Access Restricted: ${errorMessage}`);
+        } else if (res.status === 401) {
+          alert("⚠️ Your session has expired. Please sign in again.");
+        } else {
+          alert(`Error ${res.status}: ${errorMessage}`);
+        }
         return;
       }
 
+      // Si la verificación fue exitosa, procesamos el archivo binario
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       
@@ -80,6 +100,8 @@ export default function CompaniesDashboard() {
     } catch (error) {
       console.error("Download function error:", error);
       alert("Connection error during download.");
+    } finally {
+      setDownloadingFile(null);
     }
   };
 
@@ -146,7 +168,7 @@ export default function CompaniesDashboard() {
                       </span>
                     </td>
 
-                    {/* FECHA FORMATEADA DENTRO DEL CUADRANTE CELESTE */}
+                    {/* FECHA FORMATEADA */}
                     <td className="py-4 px-6 font-mono text-xs">
                       <span className="text-blue-600 dark:text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2.5 py-1 rounded-md font-bold tracking-wide inline-block">
                         {formatDate(company.created_at)}
@@ -158,9 +180,17 @@ export default function CompaniesDashboard() {
                       {company.excel_path ? (
                         <button 
                           onClick={() => handleDownload(company.excel_path)}
-                          className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-black tracking-wider uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-all cursor-pointer"
+                          disabled={downloadingFile === company.excel_path}
+                          className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-black tracking-wider uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 disabled:opacity-50 transition-all cursor-pointer"
                         >
-                          Download Excel
+                          {downloadingFile === company.excel_path ? (
+                            <>
+                              <span className="inline-block animate-spin rounded-full h-3 w-3 border-2 border-emerald-500 border-t-transparent" />
+                              Downloading...
+                            </>
+                          ) : (
+                            "Download Excel"
+                          )}
                         </button>
                       ) : (
                         <span className="inline-block px-3 py-1 rounded-md text-[10px] font-black tracking-widest uppercase bg-slate-100 dark:bg-slate-900 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-800">
@@ -195,7 +225,6 @@ export default function CompaniesDashboard() {
 
       {/* PIE DE PÁGINA */}
       <footer className="text-[10px] font-mono text-slate-400 dark:text-slate-500 tracking-wider uppercase flex items-center gap-2">
-        
       </footer>
 
     </div>
