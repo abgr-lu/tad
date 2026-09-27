@@ -1,16 +1,14 @@
-import { readFile, access, readdir } from 'fs/promises';
+import { readFile, access } from 'fs/promises';
 import { constants } from 'fs';
 import { join } from 'path';
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { query } from '@/lib/db';
 
-// Forzamos evaluación dinámica en cada petición
 export const dynamic = 'force-dynamic';
 
 export async function GET(request, { params }) {
   try {
-    // 1. Resolver y decodificar el nombre de archivo
     const resolvedParams = await params;
     const rawFilename = resolvedParams?.filename;
 
@@ -25,15 +23,18 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: "Invalid filename format" }, { status: 400 });
     }
 
-    // 2. Comprobar la sesión activa del usuario
+    // 1. Verificación de sesión en cookies
     const cookieStore = await cookies();
     const token = cookieStore.get('session_token')?.value;
 
     if (!token) {
-      return NextResponse.json({ error: "Authentication required. Please sign in." }, { status: 401 });
+      return NextResponse.json(
+        { error: "Authentication required. Please sign in." },
+        { status: 401 }
+      );
     }
 
-    // 3. Comprobar suscripción en PostgreSQL
+    // 2. Consulta de validación de suscripción en PostgreSQL
     const userQuery = `
       SELECT u.id, u.premium, u.subscription_ends_at 
       FROM users u 
@@ -44,9 +45,13 @@ export async function GET(request, { params }) {
     const user = userRes.rows?.[0];
 
     if (!user) {
-      return NextResponse.json({ error: "Session invalid or expired. Please sign in again." }, { status: 401 });
+      return NextResponse.json(
+        { error: "Session invalid or expired. Please sign in again." },
+        { status: 401 }
+      );
     }
 
+    // 3. Verificación de fecha de vencimiento
     const now = new Date();
     const isExpired = !user.subscription_ends_at || new Date(user.subscription_ends_at) < now;
 
@@ -57,16 +62,13 @@ export async function GET(request, { params }) {
       );
     }
 
-    // 4. Localizar el directorio y el archivo
-    const storageDir = join(process.cwd(), 'private_storage', 'excel_models');
-    const filePath = join(storageDir, safeFilename);
+    // 4. Búsqueda y lectura del archivo en disco
+    const filePath = join(process.cwd(), 'private_storage', 'excel_models', safeFilename);
 
     try {
-      // Verificamos si el archivo existe y es legible
       await access(filePath, constants.R_OK);
       const fileBuffer = await readFile(filePath);
 
-      // Enviamos el archivo con las cabeceras de descarga
       return new NextResponse(fileBuffer, {
         status: 200,
         headers: {
@@ -77,26 +79,9 @@ export async function GET(request, { params }) {
       });
 
     } catch (fileError) {
-      // DIAGNÓSTICO: Listamos los archivos existentes en la carpeta para identificar el problema
-      let existingFiles = [];
-      try {
-        existingFiles = await readdir(storageDir);
-      } catch (dirError) {
-        existingFiles = ["Directory does not exist or cannot be read: " + dirError.message];
-      }
-
-      console.error("=== DIAGNÓSTICO DE DESCARGA ===");
-      console.error("Archivo solicitado por el cliente:", safeFilename);
-      console.error("Ruta completa buscada en disco:", filePath);
-      console.error("Archivos encontrados en la carpeta:", existingFiles);
-      console.error("================================");
-
+      console.error("File not found on disk:", safeFilename);
       return NextResponse.json(
-        { 
-          error: "The requested Excel model was not found on the server.",
-          requestedFile: safeFilename,
-          availableFiles: existingFiles
-        },
+        { error: "The requested Excel model was not found on the server." },
         { status: 404 }
       );
     }
