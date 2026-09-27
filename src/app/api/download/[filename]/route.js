@@ -1,51 +1,39 @@
-import { readFile, access } from 'fs/promises';
+import { readFile, access, readdir } from 'fs/promises';
 import { constants } from 'fs';
 import { join } from 'path';
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { query } from '@/lib/db';
 
-// 1. Forzamos evaluación dinámica en cada petición
+// Forzamos evaluación dinámica en cada petición
 export const dynamic = 'force-dynamic';
 
 export async function GET(request, { params }) {
   try {
-    // 2. Resolvemos los parámetros dinámicos de la ruta
+    // 1. Resolver y decodificar el nombre de archivo
     const resolvedParams = await params;
     const rawFilename = resolvedParams?.filename;
 
     if (!rawFilename) {
-      return NextResponse.json(
-        { error: "Filename parameter is missing" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Filename parameter is missing" }, { status: 400 });
     }
 
-    // Decodificamos el nombre en caso de que contenga caracteres codificados
     const decodedFilename = decodeURIComponent(rawFilename);
-
-    // Prevención de Path Traversal: nos aseguramos de tomar únicamente el nombre base del archivo
     const safeFilename = decodedFilename.split(/[\\/]/).pop();
 
     if (!safeFilename || safeFilename.includes('..')) {
-      return NextResponse.json(
-        { error: "Invalid filename format" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid filename format" }, { status: 400 });
     }
 
-    // 3. SEGURIDAD: Verificación de sesión mediante cookie
+    // 2. Comprobar la sesión activa del usuario
     const cookieStore = await cookies();
     const token = cookieStore.get('session_token')?.value;
 
     if (!token) {
-      return NextResponse.json(
-        { error: "Authentication required. Please sign in." },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Authentication required. Please sign in." }, { status: 401 });
     }
 
-    // 4. CONSULTA A POSTGRESQL: Verificamos identidad y estado de suscripción
+    // 3. Comprobar suscripción en PostgreSQL
     const userQuery = `
       SELECT u.id, u.premium, u.subscription_ends_at 
       FROM users u 
@@ -56,17 +44,12 @@ export async function GET(request, { params }) {
     const user = userRes.rows?.[0];
 
     if (!user) {
-      return NextResponse.json(
-        { error: "Session invalid or expired. Please sign in again." },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Session invalid or expired. Please sign in again." }, { status: 401 });
     }
 
-    // 5. CONTROL DE VIGENCIA DE SUSCRIPCIÓN
     const now = new Date();
     const isExpired = !user.subscription_ends_at || new Date(user.subscription_ends_at) < now;
 
-    // Si no es premium o su fecha de suscripción ya venció
     if (!user.premium || isExpired) {
       return NextResponse.json(
         { error: "An active subscription is required to download institutional financial models." },
@@ -74,15 +57,16 @@ export async function GET(request, { params }) {
       );
     }
 
-    // 6. LOCALIZACIÓN Y LECTURA DEL ARCHIVO EN EL SERVIDOR
-    const filePath = join(process.cwd(), 'private_storage', 'excel_models', safeFilename);
+    // 4. Localizar el directorio y el archivo
+    const storageDir = join(process.cwd(), 'private_storage', 'excel_models');
+    const filePath = join(storageDir, safeFilename);
 
     try {
-      // Verificamos que el archivo existe y es legible en el disco
+      // Verificamos si el archivo existe y es legible
       await access(filePath, constants.R_OK);
       const fileBuffer = await readFile(filePath);
 
-      // 7. RESPUESTA Y DESCARGA PROTEGIDA CON NOMBRE ORIGINAL
+      // Enviamos el archivo con las cabeceras de descarga
       return new NextResponse(fileBuffer, {
         status: 200,
         headers: {
@@ -93,9 +77,26 @@ export async function GET(request, { params }) {
       });
 
     } catch (fileError) {
-      console.error("File not found on disk:", safeFilename, fileError);
+      // DIAGNÓSTICO: Listamos los archivos existentes en la carpeta para identificar el problema
+      let existingFiles = [];
+      try {
+        existingFiles = await readdir(storageDir);
+      } catch (dirError) {
+        existingFiles = ["Directory does not exist or cannot be read: " + dirError.message];
+      }
+
+      console.error("=== DIAGNÓSTICO DE DESCARGA ===");
+      console.error("Archivo solicitado por el cliente:", safeFilename);
+      console.error("Ruta completa buscada en disco:", filePath);
+      console.error("Archivos encontrados en la carpeta:", existingFiles);
+      console.error("================================");
+
       return NextResponse.json(
-        { error: "The requested Excel model was not found on the server." },
+        { 
+          error: "The requested Excel model was not found on the server.",
+          requestedFile: safeFilename,
+          availableFiles: existingFiles
+        },
         { status: 404 }
       );
     }
