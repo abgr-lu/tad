@@ -54,7 +54,7 @@ export default function CompaniesDashboard() {
     }
   };
 
-  // 2. DESCARGA SEGURA DE ARCHIVOS (BLOB) CON VERIFICACIÓN DE SUSCRIPCIÓN
+  // 2. DESCARGA SEGURA DE ARCHIVOS (BLOB) OPTIMIZADA
   const handleDownload = async (filename) => {
     if (!filename) return;
 
@@ -84,18 +84,27 @@ export default function CompaniesDashboard() {
         return;
       }
 
-      // Si la verificación fue exitosa, procesamos el archivo binario
+      // Convertimos la respuesta binaria en un objeto Blob
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       
+      // Creamos el elemento de anclaje temporal para disparar la descarga
       const a = document.createElement('a');
+      a.style.display = 'none';
       a.href = url;
       a.download = filename; 
       document.body.appendChild(a);
       a.click();
       
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      // DIFERIR LA LIMPIEZA:
+      // Dejamos 200ms para que el navegador y sus extensiones procesen el mensaje
+      // antes de destruir la URL temporal en memoria y retirar el nodo del DOM.
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+        if (a.parentNode) {
+          document.body.removeChild(a);
+        }
+      }, 200);
       
     } catch (error) {
       console.error("Download function error:", error);
