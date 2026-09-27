@@ -140,7 +140,7 @@ export default function LandingPage() {
           <div className="text-center max-w-6xl">
             <h1 className="text-4xl md:text-5xl font-[900] text-white leading-[0.9] tracking-tighter uppercase italic">
               ANALYTICS FOR SHIPPING INVESTORS <br/>
-              <p><span className="text-blue-400">TANKER & DRYBULK</span></p>
+              <p><span className="text-blue-400">TANKER & DRY BULK</span></p>
               <span className="text-white">SECTORS</span>
             </h1>
             <p className="mt-6 text-xl md:text-2xl text-white/60 font-bold tracking-[0.2em] uppercase">
