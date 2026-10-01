@@ -55,10 +55,15 @@ export default function LandingPage() {
 
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
+
+    // 1. Guardia de seguridad: evita ejecuciones simultáneas si ya está en curso
+    if (isProcessing) return;
+
     setEmailError('');
     setIsProcessing(true);
 
     try {
+      // 2. Comprobar si el correo ya existe en la base de datos
       const checkRes = await fetch('/api/auth/check-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -69,10 +74,11 @@ export default function LandingPage() {
       if (checkData.exists) {
         setEmailError('This email is already registered. Please sign in to choose a plan.');
         setIsExistingUser(true);
-        setIsProcessing(false);
+        setIsProcessing(false); // Reactivamos el botón porque el usuario no avanzará a Stripe
         return;
       }
 
+      // 3. Crear la sesión de Checkout en Stripe
       const stripeRes = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -86,14 +92,19 @@ export default function LandingPage() {
       const stripeData = await stripeRes.json();
 
       if (stripeData.url) {
+        // 4. Redirección al portal de pago de Stripe:
+        // NO llamamos a setIsProcessing(false) aquí.
+        // Al mantener isProcessing = true, el botón permanece inhabilitado y bloqueado
+        // mientras el navegador completa la navegación externa hacia Stripe.
         window.location.href = stripeData.url;
       } else {
         setEmailError('Failed to connect to payment portal.');
+        setIsProcessing(false); // Reactivamos únicamente si Stripe no entregó URL
       }
     } catch (error) {
+      console.error("Error al procesar el checkout:", error);
       setEmailError('An error occurred. Please try again.');
-    } finally {
-      setIsProcessing(false);
+      setIsProcessing(false); // Reactivamos si ocurrió un fallo de red o error de servidor
     }
   };
 
@@ -258,10 +269,11 @@ export default function LandingPage() {
           <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 bg-black/80 backdrop-blur-sm animate-fade-in">
             <div className="relative w-full max-w-md bg-slate-900 border border-white/10 rounded-[30px] p-8 shadow-2xl">
               
-              {/* BOTÓN CERRAR (✕) */}
+              {/* BOTÓN CERRAR (✕) - Queda inhabilitado durante el procesamiento */}
               <button 
                 type="button"
                 onClick={() => { 
+                  if (isProcessing) return;
                   setIsModalOpen(false); 
                   setEmailError(''); 
                   setIsExistingUser(false); 
@@ -269,7 +281,7 @@ export default function LandingPage() {
                   setIsProcessing(false); 
                 }}
                 disabled={isProcessing}
-                className="absolute top-6 right-6 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                className="absolute top-6 right-6 text-slate-400 hover:text-white disabled:opacity-20 disabled:cursor-not-allowed transition-colors cursor-pointer"
               >
                 ✕
               </button>
@@ -310,12 +322,12 @@ export default function LandingPage() {
                   <button 
                     type="submit" 
                     disabled={isProcessing}
-                    className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-4 rounded-xl font-black text-xs tracking-[0.2em] hover:bg-blue-500 disabled:bg-blue-600/50 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-blue-600/50 transition-all uppercase cursor-pointer"
+                    className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-4 rounded-xl font-black text-xs tracking-[0.2em] hover:bg-blue-500 disabled:bg-blue-600/50 disabled:opacity-60 disabled:cursor-not-allowed transition-all uppercase cursor-pointer"
                   >
                     {isProcessing ? (
                       <>
                         <span className="inline-block animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
-                        <span>Processing...</span>
+                        <span>Redirecting to payment...</span>
                       </>
                     ) : (
                       'Continue to Payment'
