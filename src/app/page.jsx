@@ -258,14 +258,18 @@ export default function LandingPage() {
           <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 bg-black/80 backdrop-blur-sm animate-fade-in">
             <div className="relative w-full max-w-md bg-slate-900 border border-white/10 rounded-[30px] p-8 shadow-2xl">
               
+              {/* BOTÓN CERRAR (✕) */}
               <button 
+                type="button"
                 onClick={() => { 
                   setIsModalOpen(false); 
                   setEmailError(''); 
                   setIsExistingUser(false); 
                   setEmail('');
+                  setIsProcessing(false); 
                 }}
-                className="absolute top-6 right-6 text-slate-400 hover:text-white cursor-pointer"
+                disabled={isProcessing}
+                className="absolute top-6 right-6 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
               >
                 ✕
               </button>
@@ -277,6 +281,7 @@ export default function LandingPage() {
                 <input 
                   type="email" 
                   required 
+                  disabled={isProcessing}
                   placeholder="investor@example.com"
                   value={email}
                   onChange={(e) => {
@@ -284,7 +289,7 @@ export default function LandingPage() {
                     setIsExistingUser(false);
                     setEmailError('');
                   }}
-                  className="w-full bg-slate-950/60 border border-white/10 text-white placeholder-slate-600 rounded-xl px-4 py-4 text-sm font-bold tracking-tight focus:outline-none focus:border-blue-500 transition-colors mb-4"
+                  className="w-full bg-slate-950/60 border border-white/10 text-white placeholder-slate-600 rounded-xl px-4 py-4 text-sm font-bold tracking-tight focus:outline-none focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors mb-4"
                 />
 
                 {emailError && (
@@ -305,9 +310,16 @@ export default function LandingPage() {
                   <button 
                     type="submit" 
                     disabled={isProcessing}
-                    className="w-full bg-blue-600 text-white py-4 rounded-xl font-black text-xs tracking-[0.2em] hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all uppercase cursor-pointer"
+                    className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-4 rounded-xl font-black text-xs tracking-[0.2em] hover:bg-blue-500 disabled:bg-blue-600/50 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-blue-600/50 transition-all uppercase cursor-pointer"
                   >
-                    {isProcessing ? 'Verifying...' : 'Continue to Payment'}
+                    {isProcessing ? (
+                      <>
+                        <span className="inline-block animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                        <span>Processing...</span>
+                      </>
+                    ) : (
+                      'Continue to Payment'
+                    )}
                   </button>
                 )}
               </form>
