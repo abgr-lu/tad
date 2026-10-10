@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import Footer from './components/footer';
+import Footer from './components/Footer';
 
 export default function LandingPage() {
   const [isDarkMode, setIsDarkMode] = useState(true);
