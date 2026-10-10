@@ -47,7 +47,19 @@ export default function Footer() {
         </div>
 
         {/* BLOQUE DERECHO: REDES SOCIALES */}
+        
         <div className="flex items-center gap-3">
+          {/* Botón YouTube */}
+          <a
+            href="https://www.youtube.com/@ouriosanalytics" // Sustituye con tu canal real de YouTube
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Subscribe on YouTube"
+            className="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-500 hover:border-red-300 dark:hover:border-red-900/50 transition-all bg-slate-50 dark:bg-slate-900/50"
+          >
+            <SocialIcons.YouTube />
+          </a>
+          
           {/* Botón X */}
           <a
             href="https://x.com/ouriosanalytics" // Sustituye con tu perfil real de X cuando lo tengas
@@ -61,7 +73,7 @@ export default function Footer() {
 
           {/* Botón TikTok */}
           <a
-            href="https://www.tiktok.com/@ouriosanalytics" // Sustituye con tu perfil real de TikTok
+            href="https://www.tiktok.com/@ourios.analytics" // Sustituye con tu perfil real de TikTok
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Follow us on TikTok"
@@ -70,16 +82,7 @@ export default function Footer() {
             <SocialIcons.TikTok />
           </a>
 
-          {/* Botón YouTube */}
-          <a
-            href="https://www.youtube.com/@ouriosanalytics" // Sustituye con tu canal real de YouTube
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Subscribe on YouTube"
-            className="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-500 hover:border-red-300 dark:hover:border-red-900/50 transition-all bg-slate-50 dark:bg-slate-900/50"
-          >
-            <SocialIcons.YouTube />
-          </a>
+          
         </div>
 
       </div>

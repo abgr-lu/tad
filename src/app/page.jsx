@@ -371,7 +371,7 @@ export default function LandingPage() {
                     <li>Master model: you just need to keep the Master open to see and summarize all the main info you need to know to see if it's or not a good moment to invest.</li>
                   </ul>
 
-                  <h4 className="text-sm font-black text-white uppercase tracking-wider mb-3">Models of:</h4>
+                  <h4 className="text-sm font-black text-white uppercase tracking-wider mb-3">And Individual Models of:</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {includedCompanies.map((company, index) => (
                       <div key={index} className="flex items-center gap-2 p-2.5 bg-slate-950/60 border border-white/5 rounded-xl text-slate-300">
