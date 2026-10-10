@@ -2,6 +2,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 
 function SignInForm() {
   const [form, setForm] = useState({ email: '', password: '' });
@@ -44,11 +45,24 @@ function SignInForm() {
       {/* ENCABEZADO CORPORATIVO OURIOS */}
       <div className="text-center mb-8">
         <div className="mb-2">
-          <span className="text-3xl font-black tracking-tighter text-white uppercase italic">Ourios</span>
+          {/* Contenedor flex con justify-center para centrar horizontalmente */}
+          <div className="flex items-center justify-center">
+            <Link 
+              href="/" 
+              className="inline-block transition-transform duration-200 hover:scale-[1.02] cursor-pointer"
+              title="Volver a la página de inicio"
+            >
+              <Image
+                src="/logo.png"
+                alt="Ourios Analytics Logo"
+                width={200}
+                height={60}
+                priority
+                className="h-9 sm:h-10 md:h-12 w-auto object-contain mx-auto"
+              />
+            </Link>
+          </div>
         </div>
-        <h2 className="text-xs font-black tracking-[0.25em] text-slate-400 uppercase mt-1">
-          Secure Terminal Access
-        </h2>
       </div>
 
       {infoMessage && (

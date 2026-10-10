@@ -135,12 +135,7 @@ export default function DashboardHome() {
         </div>
 
         <div className="flex items-center gap-4 mt-2 sm:mt-0">
-          <Link 
-            href="/dashboard/profile" 
-            className="text-blue-600 dark:text-blue-500 font-bold tracking-widest uppercase text-[10px] hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
-          >
-            Manage Account
-          </Link>
+          
         </div>
       </footer>
 

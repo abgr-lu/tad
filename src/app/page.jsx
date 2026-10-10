@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import Footer from './components/footer';
+import Image from "next/image";
 
 export default function LandingPage() {
   const [isDarkMode, setIsDarkMode] = useState(true);
@@ -121,19 +122,19 @@ export default function LandingPage() {
           <div className={`absolute inset-0 ${isDarkMode ? 'bg-black/50' : 'bg-slate-900/5'} backdrop-brightness-85`} />
         </div>
 
-        {/* NAVEGACIÓN Y LOGOTIPO CON EFECTO DE LÍNEAS MARÍTIMAS */}
+        {/* NAVEGACIÓN Y LOGOTIPO */}
 <nav className="relative z-50 flex justify-between items-center px-6 md:px-10 py-6">
-  {/* BLOQUE IZQUIERDO: LOGO Y LÍNEAS */}
-  <div className="flex flex-col">
-    <span className="text-4xl md:text-5xl font-black tracking-tighter text-white uppercase italic leading-none">
-      Ourios
-    </span>
-    {/* Líneas horizontales tenues simulando las olas del mar */}
-    <div className="flex flex-col gap-1 mt-1 opacity-70">
-      <div className="h-[2px] w-full bg-gradient-to-r from-blue-500 via-sky-400 to-transparent rounded-full" />
-      <div className="h-[1px] w-4/5 bg-gradient-to-r from-blue-400/50 to-transparent rounded-full" />
-    </div>
-  </div>
+  {/* BLOQUE IZQUIERDO: LOGOTIPO CORPORATIVO */}
+<div className="flex items-center">
+  <Image
+    src="/logo.png"
+    alt="Ourios Analytics Logo"
+    width={200}
+    height={60}
+    priority
+    className="h-9 sm:h-10 md:h-12 w-auto object-contain transition-transform duration-200 hover:scale-[1.02]"
+  />
+</div>
 
   {/* BLOQUE DERECHO: BOTÓN SIGN IN ALINEADO */}
   <div className="flex items-center">
@@ -352,13 +353,16 @@ export default function LandingPage() {
               </button>
 
               <div className="space-y-4 text-xs font-medium text-slate-300 leading-relaxed mb-8">
-                <span className="text-3xl font-black tracking-tighter text-white uppercase italic">Ourios</span>
-                {/* Línea horizontal tenue */}
-                <div className="flex flex-col gap-1 mt-1 opacity-70 mb-4">
-                  <div className="h-[2px] w-32 bg-gradient-to-r from-blue-500 via-sky-400 to-transparent rounded-full" />
-                  <div className="h-[1px] w-24 bg-gradient-to-r from-blue-400/50 to-transparent rounded-full" />
-                </div>
-
+                <div className="flex items-center">
+  <Image
+    src="/logo.png"
+    alt="Ourios Analytics Logo"
+    width={200}
+    height={60}
+    priority
+    className="h-9 sm:h-10 md:h-12 w-auto object-contain transition-transform duration-200 hover:scale-[1.02]"
+  />
+</div>
                 <p className="font-bold text-white text-sm">Do you want to invest in shipping as a professional investor?</p>
                 <p className="font-bold text-white text-sm">Are you already investing and you want to save a lot of time having the models already done and updated?</p>
                 <p className="font-bold text-white text-sm">Would you like to play with the models making your own assumptions?</p>
