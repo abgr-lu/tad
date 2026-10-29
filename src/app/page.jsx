@@ -172,7 +172,7 @@ export default function LandingPage() {
               </div>
 
               <div className="flex items-baseline gap-2 text-white">
-                <span className="text-6xl font-black tracking-tighter">$199</span>
+                <span className="text-6xl font-black tracking-tighter">Only $199</span>
                 <span className="text-xl font-bold opacity-40">/FIRST SIX MONTHS FOR NEW USERS</span>
               </div>
 
