@@ -160,6 +160,48 @@ export default function LandingPage() {
             </p>
           </div>
           
+          {/* New Users */}
+          <div className="mt-16 grid md:grid-cols-1 gap-8 w-full max-w-5xl px-4 pb-20 justify-items-center">
+            <div className="group relative bg-blue-600/10 backdrop-blur-3xl border border-blue-500/30 rounded-[40px] p-10 overflow-hidden transition-all hover:scale-[1.02] shadow-2xl shadow-blue-500/10 w-full">
+              <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-400/30 blur-[80px] rounded-full" />
+              
+              <div className="flex justify-between items-start mb-8">
+                <h3 className="text-xs tracking-[0.3em] text-blue-300 font-semibold">You don´t know us, we understand. So...</h3>
+                <h3 className="text-xs font-black tracking-[0.3em] text-blue-300 uppercase">Launch Offer Only for New Users</h3>
+                <span className="bg-blue-500 text-[10px] font-black px-3 py-1 rounded-full text-white tracking-tighter">BEST VALUE</span>
+              </div>
+
+              <div className="flex items-baseline gap-2 text-white">
+                <span className="text-6xl font-black tracking-tighter">$199</span>
+                <span className="text-xl font-bold opacity-40">/FIRST SIX MONTHS FOR NEW USERS</span>
+              </div>
+
+              <div className="mt-10 space-y-5">
+                <div className="text-white font-semibold text-sm italic">✓ All Monthly Features</div>
+                {/* BOTÓN O ENLACE "MORE DETAILS" AL FINAL DEL CUADRANTE */}
+              
+                <div className="text-blue-300 font-semibold text-sm italic underline decoration-blue-500/50 underline-offset-4">✓ We're so confident in what we can offer you that you have the option to pay for just one month out of the first six. After that, there's no commitment, but you'll want to stay with us forever</div>
+              </div>
+
+              <div className="mt-4 text-center">
+                <button 
+                  onClick={() => setIsDetailsModalOpen(true)}
+                  className="text-xs font-bold text-blue-300 hover:text-blue-300 uppercase tracking-widest underline decoration-blue-500/40 underline-offset-4 transition-colors cursor-pointer"
+                >
+                  More Details →
+                </button>
+              </div>
+
+              <button 
+                onClick={() => setIsModalOpen(true)}
+                className="mt-12 w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-xs tracking-[0.2em] hover:bg-blue-400 transition-all shadow-lg shadow-blue-600/40 uppercase cursor-pointer"
+              >
+                Claim New User Offer
+              </button>
+
+            </div>
+          </div>
+
           <div className="mt-16 grid md:grid-cols-2 gap-8 w-full max-w-5xl px-4 pb-5">
             
             {/* Mensual */}
@@ -177,7 +219,7 @@ export default function LandingPage() {
               </div>
 
               <div className="mt-10 space-y-5">
-                {['22 Excel models covering all the most popular companies', 'A Master with valuations (NAV, PER, EV/EBITDA, dividend yield)', 'Vessels Values'].map((i) => (
+                {['21 Excel models covering all the most popular listed shipping companies', 'A Master model to see all the valuations from all the companies at a glance', 'Vessels Valuations'].map((i) => (
                   <div key={i} className="flex items-center gap-3 text-white/70 font-semibold text-sm border-b border-white/5 pb-3 italic">
                     <div className="w-1.5 h-1.5 bg-blue-500 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]" /> {i}
                   </div>
@@ -233,36 +275,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* New Users */}
-          <div className="mt-16 grid md:grid-cols-1 gap-8 w-full max-w-5xl px-4 pb-20 justify-items-center">
-            <div className="group relative bg-blue-600/10 backdrop-blur-3xl border border-blue-500/30 rounded-[40px] p-10 overflow-hidden transition-all hover:scale-[1.02] shadow-2xl shadow-blue-500/10 w-full">
-              <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-400/30 blur-[80px] rounded-full" />
-              
-              <div className="flex justify-between items-start mb-8">
-                <h3 className="text-xs tracking-[0.3em] text-blue-300 font-semibold">You don´t know us, we understand. So...</h3>
-                <h3 className="text-xs font-black tracking-[0.3em] text-blue-300 uppercase">Launch Offer Only for New Users</h3>
-                <span className="bg-blue-500 text-[10px] font-black px-3 py-1 rounded-full text-white tracking-tighter">BEST VALUE</span>
-              </div>
-
-              <div className="flex items-baseline gap-2 text-white">
-                <span className="text-6xl font-black tracking-tighter">$199</span>
-                <span className="text-xl font-bold opacity-40">/FIRST SIX MONTHS FOR NEW USERS</span>
-              </div>
-
-              <div className="mt-10 space-y-5">
-                <div className="text-white font-semibold text-sm italic">✓ All Monthly Features</div>
-                <div className="text-blue-300 font-semibold text-sm italic underline decoration-blue-500/50 underline-offset-4">✓ We're so confident in what we can offer you that you have the option to pay for just one month out of the first six. After that, there's no commitment, but you'll want to stay with us forever</div>
-              </div>
-
-              <button 
-                onClick={() => setIsModalOpen(true)}
-                className="mt-12 w-full bg-blue-600 text-white py-5 rounded-2xl font-black text-xs tracking-[0.2em] hover:bg-blue-400 transition-all shadow-lg shadow-blue-600/40 uppercase cursor-pointer"
-              >
-                Claim New User Offer
-              </button>
-
-            </div>
-          </div>
+          
         </div>
 
         {/* VENTANA FLOTANTE (MODAL) PARA CORREO (CHECKOUT) */}
@@ -375,7 +388,7 @@ export default function LandingPage() {
                     <li>Master model: you just need to keep the Master open to see and summarize all the main info you need to know to see if it's or not a good moment to invest.</li>
                   </ul>
 
-                  <h4 className="text-sm font-black text-white uppercase tracking-wider mb-3">And Individual Models of:</h4>
+                  <h4 className="text-sm font-black text-white uppercase tracking-wider mb-3">And Individual Model of:</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {includedCompanies.map((company, index) => (
                       <div key={index} className="flex items-center gap-2 p-2.5 bg-slate-950/60 border border-white/5 rounded-xl text-slate-300">
