@@ -23,6 +23,7 @@ export default function LandingPage() {
     "Okeanis Eco Tankers",
     "Frontline",
     "DHT Holdings",
+    "Capital Tankers",
     "Nordic American Tankers (NAT)",
     "Teekay Tankers",
     "International Seaways",
@@ -219,7 +220,7 @@ export default function LandingPage() {
               </div>
 
               <div className="mt-10 space-y-5">
-                {['21 Excel models covering all the most popular listed shipping companies', 'A Master model to see all the valuations from all the companies at a glance', 'Vessels Valuations'].map((i) => (
+                {['22 Excel models covering all the most popular listed shipping companies', 'A Master model to see all the valuations from all the companies at a glance', 'Vessels Valuations'].map((i) => (
                   <div key={i} className="flex items-center gap-3 text-white/70 font-semibold text-sm border-b border-white/5 pb-3 italic">
                     <div className="w-1.5 h-1.5 bg-blue-500 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]" /> {i}
                   </div>
